@@ -5,9 +5,10 @@ import { clamp, formatNumber, fromDisplay, toDisplay } from '../units.js'
 // the current unit (in or cm).
 //
 // While you type, the text is kept as-is (so "60." doesn't get erased), and
-// the desk updates live whenever the text is a valid number in range. When you
-// leave the box, out-of-range numbers are pulled back into range.
-export default function LengthField({ label, value, units, min, max, onChange }) {
+// the value updates live whenever the text is a valid number in range. When
+// you leave the box, out-of-range numbers are pulled back into range.
+// With commitOnBlur, nothing changes until you press Enter or leave the box.
+export default function LengthField({ label, value, units, min, max, onChange, commitOnBlur = false }) {
   const shown = formatNumber(toDisplay(value, units), units)
   const [text, setText] = useState(shown)
   const [focused, setFocused] = useState(false)
@@ -19,6 +20,7 @@ export default function LengthField({ label, value, units, min, max, onChange })
 
   function handleChange(event) {
     setText(event.target.value)
+    if (commitOnBlur) return
     const cm = fromDisplay(parseFloat(event.target.value), units)
     if (Number.isFinite(cm) && cm >= min && cm <= max) onChange(cm)
   }

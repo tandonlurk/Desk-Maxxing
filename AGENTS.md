@@ -24,3 +24,21 @@ committed separately.
 - Ask the owner before adding dependencies.
 - `three` is pinned to 0.182.x: from r183 on, React Three Fiber 9 triggers a
   `THREE.Clock` deprecation warning in the console.
+
+## Item library contract (for whoever builds `src/assets/registry.js`)
+The placement code never imports `registry.js` directly; it goes through
+`src/assets/library.js`, which picks up `registry.js` automatically once it exists
+(until then, `src/assets/placeholderItems.js` stands in, and that file can then be deleted).
+
+- Export the list as `export const ASSETS = [...]` (`assets`, `REGISTRY`, `registry`, or a default
+  export also work, as an array or an `{ id: asset }` object).
+- Each asset follows the spec: `id`, `name`, `category`, `placement` (`'desk' | 'floor'`),
+  `size: { width, depth, height }` in **cm** (an array `[w, d, h]` also works),
+  `colorOptions` (`'#hex'` strings or `{ name, value }`), `price: null`, `buyLinks: []`, `vendor: null`.
+- Optional `Model`: a React component rendered as `<Model color size asset />`. Draw it
+  **centered on x/z, sitting on y = 0, front facing +z** (toward the person at the desk; for a chair,
+  +z is the side your knees come out of), real size in cm. Without `Model`, a placeholder block is drawn.
+- Optional `flat: true` for things other items can sit on (mats, rugs). Defaults to `height <= 1.5`.
+- Optional `spots: [...]`: Snap-mode spot ids in order of preference (see `SPOT_LABELS` in
+  `src/scene/spots.js`). Without it, spots are guessed from words in the id/name/category
+  (monitor, keyboard, mouse, lamp, mug, plant, chair, rug, tower, bin…).

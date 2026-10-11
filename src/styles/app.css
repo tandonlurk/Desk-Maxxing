@@ -111,26 +111,356 @@
   background: var(--bg);
 }
 
-.view-buttons {
+/* The bar across the top of the 3D view. Clicks fall through the gaps to the scene. */
+.stage-toolbar {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  pointer-events: none;
+}
+
+.stage-toolbar > * {
+  pointer-events: auto;
+}
+
+.view-buttons,
+.undo-redo,
+.placement-mode {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.stage-help {
+.placement-mode .segmented {
+  width: 130px;
+}
+
+.toolbar-label {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.planner-stage.is-dragging,
+.planner-stage.is-dragging canvas {
+  cursor: grabbing !important;
+}
+
+/* Messages along the bottom of the 3D view */
+.stage-bottom {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.stage-bottom > * {
+  pointer-events: auto;
+}
+
+.stage-help {
   margin: 0;
   font-size: 13px;
   font-weight: 700;
   color: var(--ink-soft);
   white-space: nowrap;
   pointer-events: none;
+}
+
+.toast {
+  margin: 0;
+  padding: 7px 14px;
+  font-weight: 800;
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  animation: pop-in 260ms var(--snap);
+}
+
+.spot-status {
+  margin: 0;
+  padding: 5px 12px;
+  font-weight: 800;
+  background: var(--accent);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  animation: pop-in 200ms var(--snap);
+}
+
+.misplaced-banner {
+  padding: 7px 14px;
+  font: 800 14px var(--font-body);
+  color: #fff;
+  background: var(--danger);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  animation: pop-in 260ms var(--snap);
+}
+
+/* Distance labels in Free mode (drawn over the 3D view) */
+.guide-label {
+  padding: 1px 7px;
+  font: 800 12px var(--font-body);
+  color: var(--ink);
+  white-space: nowrap;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+}
+
+/* ---------- Selected item card ---------- */
+
+.inspector {
+  position: absolute;
+  top: 56px;
+  right: 0;
+  width: 270px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: pop-in 240ms var(--snap);
+}
+
+.inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.inspector-head h3 {
+  font-size: 20px;
+}
+
+.inspector-size {
+  margin: -8px 0 0;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.inspector-warning {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--danger);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.inspector-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rotate-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rotation-value {
+  min-width: 44px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.color-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: var(--dot);
+  border: var(--border);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform var(--speed) var(--snap);
+}
+
+.color-dot:hover {
+  transform: scale(1.12);
+}
+
+.color-dot.is-active {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.inspector-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font: 800 20px/1 var(--font-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.icon-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* ---------- Item library ---------- */
+
+.library {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.library-note {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--muted-fill);
+  border: 2px dashed var(--ink-soft);
+  border-radius: var(--radius-sm);
+}
+
+.library-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.library-section h3 {
+  font-size: 18px;
+}
+
+.library-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.library-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition:
+    transform var(--speed) var(--snap),
+    box-shadow var(--speed) var(--snap);
+}
+
+.library-card:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: var(--shadow);
+}
+
+.library-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+  cursor: grabbing;
+}
+
+.library-card:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* A tiny block in the item's color */
+.library-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  background: var(--item-color);
+  border: var(--border);
+  border-radius: 6px;
+  box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.12);
+}
+
+.library-card-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.library-card-name {
+  font-weight: 800;
+}
+
+.library-card-size {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.tag {
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--muted-fill);
+  border: 2px solid var(--ink);
+  border-radius: 99px;
+}
+
+/* ---------- Sidebar ---------- */
+
+.planner-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* The sidebar scrolls; its sections shouldn't get squashed to fit. */
+.planner-sidebar > * {
+  flex-shrink: 0;
+}
+
+.next-step {
+  width: 100%;
 }
 
 /* ---------- Desk editor ---------- */
@@ -274,5 +604,11 @@
 
   .stage-help {
     display: none;
+  }
+
+  .inspector {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
   }
 }

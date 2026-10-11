@@ -10,7 +10,7 @@ import { getMaterial } from '../assets/deskOptions.js'
 export const TOP_THICKNESS = 3
 
 // How far in front of the desk edge a chair (and your eyes) would be.
-const SEAT_DISTANCE = 45
+export const SEAT_DISTANCE = 45
 
 // Your eyes are roughly 47 cm above an ergonomically set desk surface, whether
 // sitting or standing, so eye height simply follows the desk height.
@@ -56,6 +56,43 @@ export function getCornerFill(desk) {
   if (desk.shape !== 'corner') return null
   const { width: W, depth: D } = desk
   return { x: W / 2 - D, z: D / 2, size: Math.min(55, Math.max(0, W - D - 15)) }
+}
+
+// The outline of the desktop as seen from above: a list of [x, z] corners,
+// in order around the edge. Items on the desk must stay inside it.
+export function getDeskOutline(desk) {
+  const { width: W, depth: D } = desk
+  const left = -W / 2
+  const right = W / 2
+  const back = -D / 2
+  const front = D / 2
+
+  if (desk.shape === 'l-shape') {
+    const returnFront = back + desk.returnLength
+    if (desk.returnSide === 'left') {
+      const inner = left + desk.returnDepth
+      return [[left, back], [right, back], [right, front], [inner, front], [inner, returnFront], [left, returnFront]]
+    }
+    const inner = right - desk.returnDepth
+    return [[left, back], [right, back], [right, returnFront], [inner, returnFront], [inner, front], [left, front]]
+  }
+
+  if (desk.shape === 'corner') {
+    const fill = getCornerFill(desk)
+    const sideFront = back + W
+    const inner = right - D
+    return [
+      [left, back],
+      [right, back],
+      [right, sideFront],
+      [inner, sideFront],
+      [inner, front + fill.size], // the diagonal edge runs between these two
+      [inner - fill.size, front],
+      [left, front],
+    ]
+  }
+
+  return [[left, back], [right, back], [right, front], [left, front]]
 }
 
 // The floor-plan box that contains the whole desk.

@@ -61,6 +61,11 @@ export default function CameraRig({ desk, request }) {
       controls.target.distanceTo(goal.current.target) < 0.5 &&
       Math.abs(camera.fov - goal.current.fov) < 0.1
     if (done) {
+      // Land exactly on the goal. (For the top view, even a tiny leftover
+      // sideways offset would leave the view spun at an odd angle.)
+      camera.position.copy(goal.current.position)
+      controls.target.copy(goal.current.target)
+      controls.update()
       camera.fov = goal.current.fov
       camera.updateProjectionMatrix()
       goal.current = null

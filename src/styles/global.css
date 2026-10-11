@@ -85,6 +85,22 @@ h3 {
   background: #ffd766;
 }
 
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-small {
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.btn-danger:hover {
+  background: #ffe1e1;
+}
+
 .btn.is-active {
   background: var(--accent);
   transform: translate(2px, 2px);
@@ -197,4 +213,30 @@ h3 {
   width: 100%;
   accent-color: var(--ink);
   cursor: pointer;
+}
+
+/* ---------- Shared animations ---------- */
+
+/* Things that appear pop in with a quick overshoot. */
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
 }
