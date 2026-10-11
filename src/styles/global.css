@@ -1,0 +1,200 @@
+/* Base elements and shared building blocks (buttons, panels, inputs). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* ---------- Panels ---------- */
+
+.panel {
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Buttons ---------- */
+/* Buttons press down on click: they move into their shadow, which collapses. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font: 800 14px var(--font-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform var(--speed) var(--snap),
+    box-shadow var(--speed) var(--snap),
+    background var(--speed);
+  user-select: none;
+}
+
+.btn:hover {
+  background: var(--muted-fill);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.btn:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.btn-accent {
+  background: var(--accent);
+}
+
+.btn-accent:hover {
+  background: #ffd766;
+}
+
+.btn.is-active {
+  background: var(--accent);
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+/* ---------- Segmented control (a row of joined buttons) ---------- */
+
+.segmented {
+  display: flex;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.segmented button {
+  flex: 1;
+  padding: 6px 8px;
+  font: 800 13px var(--font-body);
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-left: var(--border);
+  cursor: pointer;
+  transition: background var(--speed);
+}
+
+.segmented button:first-child {
+  border-left: none;
+}
+
+.segmented button:hover {
+  background: var(--muted-fill);
+}
+
+.segmented button.is-active {
+  background: var(--accent);
+}
+
+.segmented button:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: -3px;
+}
+
+/* ---------- Form fields ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.input {
+  width: 100%;
+  padding: 6px 8px;
+  font: 700 15px var(--font-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.input:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 0;
+}
+
+.input-with-unit {
+  position: relative;
+}
+
+.input-with-unit .input {
+  padding-right: 34px;
+}
+
+/* Hide the browser's tiny up/down arrows (they cover the unit label).
+   Arrow keys still step the value. */
+.input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.input[type='number']::-webkit-inner-spin-button,
+.input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input-with-unit .unit {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+/* Chunky range slider */
+.range {
+  width: 100%;
+  accent-color: var(--ink);
+  cursor: pointer;
+}

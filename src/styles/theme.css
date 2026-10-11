@@ -1,0 +1,48 @@
+/*
+  The one theme file: every color, border, shadow, and font lives here.
+  Other CSS files only use these variables.
+*/
+:root {
+  /* Colors */
+  --bg: #bfe6ff;            /* baby blue, used everywhere incl. behind the 3D scene */
+  --bg-deep: #a3d6f5;
+  --panel: #ffffff;
+  --ink: #1b2541;           /* dark navy: outlines, text, shadows */
+  --ink-soft: #55607f;
+  --accent: #ffc93c;        /* sunny yellow */
+  --accent-2: #ff6b9a;      /* hot pink */
+  --accent-3: #4fd1a5;      /* mint (success) */
+  --danger: #ff5a5a;
+  --muted-fill: #eef6fc;
+
+  /* 3D scene colors (read by src/scene/cssVar.js) */
+  --floor-top: #eaf7ff;
+  --floor-side: #8fc6ea;
+  --grid-cell: #c2e0f4;
+  --grid-section: #9ccbea;
+
+  /* Borders and corners */
+  --border-w: 3px;
+  --border: var(--border-w) solid var(--ink);
+  --radius: 8px;
+  --radius-sm: 5px;
+
+  /* Hard offset shadows, no blur */
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-sm: 2px 2px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+
+  /* Fonts */
+  --font-heading: 'Lilita One', 'Arial Black', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Motion */
+  --snap: cubic-bezier(0.34, 1.56, 0.64, 1); /* quick, with a little overshoot */
+  --speed: 120ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --speed: 0ms;
+  }
+}

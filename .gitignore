@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Local overrides (e.g. testing against a different Supabase project).
+# Never commit these.
+.env*
+!.env.example
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

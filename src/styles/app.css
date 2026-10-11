@@ -1,0 +1,278 @@
+/* Layout and component styles. Colors/borders/shadows come from theme.css. */
+
+/* ---------- App shell ---------- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 10px 20px;
+  background: var(--panel);
+  border-bottom: var(--border);
+  box-shadow: 0 4px 0 var(--ink);
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* A tiny desk drawn with CSS: a yellow top on two navy legs. */
+.logo-mark {
+  position: relative;
+  width: 30px;
+  height: 22px;
+}
+
+.logo-mark::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 9px;
+  background: var(--accent);
+  border: var(--border);
+  border-radius: 3px;
+}
+
+.logo-mark::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 4px;
+  right: 4px;
+  height: 13px;
+  border-left: 4px solid var(--ink);
+  border-right: 4px solid var(--ink);
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 5px 12px;
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: none;
+  border: var(--border-w) solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.nav-link:hover {
+  border-color: var(--ink);
+}
+
+.nav-link.active {
+  background: var(--accent);
+  border-color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- Planner ---------- */
+
+.planner {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+  padding: 16px;
+}
+
+.planner-sidebar {
+  width: 330px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.planner-stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  /* The 3D canvas is transparent; this is the background behind the scene. */
+  background: var(--bg);
+}
+
+.view-buttons {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.stage-help {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---------- Desk editor ---------- */
+
+.desk-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.editor-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.editor-title-row h2 {
+  font-size: 24px;
+}
+
+.editor-title-row .segmented {
+  width: 130px;
+}
+
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 2px dashed var(--bg-deep);
+}
+
+.editor-section h3 {
+  font-size: 18px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.sub-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--muted-fill);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* A swatch shows the desktop color with a stripe of the leg color. */
+.swatch {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(var(--swatch-top) 68%, var(--ink) 68%, var(--ink) 74%, var(--swatch-legs) 74%);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform var(--speed) var(--snap),
+    box-shadow var(--speed) var(--snap);
+}
+
+.swatch:hover {
+  transform: translateY(-2px);
+}
+
+.swatch:active,
+.swatch.is-active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.swatch.is-active {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+.leg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sit-stand strong {
+  color: var(--ink);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+/* ---------- Phones: stack the planner (it can be basic here) ---------- */
+
+@media (max-width: 800px) {
+  .header {
+    padding: 8px 12px;
+  }
+
+  .logo {
+    font-size: 21px;
+  }
+
+  .planner {
+    flex-direction: column-reverse;
+    height: auto;
+    padding: 10px;
+  }
+
+  .planner-stage {
+    height: 60vh;
+    flex: none;
+  }
+
+  .planner-sidebar {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .stage-help {
+    display: none;
+  }
+}

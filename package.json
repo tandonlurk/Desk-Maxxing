@@ -1,0 +1,30 @@
+{
+  "name": "desk-maxxing",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Plan your desk setup in 3D, then share it.",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "start": "node scripts/check-port.js && vite build && vite preview",
+    "dev": "node scripts/check-port.js && vite",
+    "build": "vite build",
+    "check-secrets": "node scripts/check-secrets.js",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "@supabase/supabase-js": "^2.117.3",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.4"
+  }
+}

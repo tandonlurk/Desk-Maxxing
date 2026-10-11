@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs before every commit (enabled by `npm install` via the "prepare" script).
+npm run --silent check-secrets
