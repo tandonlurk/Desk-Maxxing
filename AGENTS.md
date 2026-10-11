@@ -14,6 +14,12 @@ committed separately.
   console for errors **and warnings** from the app (ignore extension noise).
 - Planner: change size, shape (rectangle / L / corner), material, and legs (incl. the
   standing slider), then click the Front / Top / Side / Seated views.
+- Items: click and drag cards from the Items tab in both Snap and Free modes; check spots glow
+  and lock in (Snap), distance guides and arrow nudges (Free), R / Delete / Cmd+D / Cmd+Z, and
+  shrinking the desk (items get nudged back on or flagged red).
+- R3F ignores synthetic pointer events dispatched from scripts, so test scene clicks/drags with
+  real mouse input. Library-card drags use window listeners and do work with synthetic events.
+- While another session is using port 5173, test with `npx vite --port 5174`.
 
 ## Conventions
 - Plain JS + React, R3F/drei for 3D, plain CSS with variables from `src/styles/theme.css`.

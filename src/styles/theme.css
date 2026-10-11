@@ -5,21 +5,26 @@
 :root {
   /* Colors */
   --bg: #bfe6ff;            /* baby blue, used everywhere incl. behind the 3D scene */
+  --bg-dots: #cdeeff;       /* the soft polka dots on the background */
   --bg-deep: #a3d6f5;
-  --panel: #ffffff;
+  --panel: #fffaf2;         /* warm cream white */
   --ink: #1b2541;           /* dark navy: outlines, text, shadows */
-  --ink-soft: #55607f;
+  --ink-soft: #5d6585;
   --accent: #ffc93c;        /* sunny yellow */
   --accent-2: #ff6b9a;      /* hot pink */
   --accent-3: #4fd1a5;      /* mint (success) */
+  --accent-warm: #ffb27a;   /* peach */
   --danger: #ff5a5a;
-  --muted-fill: #eef6fc;
+  --muted-fill: #fff0dc;    /* warm hover / note backgrounds */
+  --divider: #f1dcbc;
 
   /* 3D scene colors (read by src/scene/cssVar.js) */
-  --floor-top: #eaf7ff;
-  --floor-side: #8fc6ea;
-  --grid-cell: #c2e0f4;
-  --grid-section: #9ccbea;
+  --floor-plank-1: #f6ead8; /* whitewashed wood planks */
+  --floor-plank-2: #f1e2cc;
+  --floor-plank-3: #f9efe1;
+  --floor-gap: #d9c3a3;
+  --floor-side: #c9996a;
+  --sun: #fff0d9;           /* warm sunlight */
 
   /* Borders and corners */
   --border-w: 3px;

@@ -14,7 +14,10 @@ body,
 }
 
 body {
-  background: var(--bg);
+  /* Baby blue with soft polka dots, like cozy wallpaper. */
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--bg-dots) 3px, transparent 3.5px);
+  background-size: 28px 28px;
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 15px;
@@ -65,6 +68,8 @@ h3 {
 
 .btn:hover {
   background: var(--muted-fill);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .btn:active {
@@ -83,6 +88,10 @@ h3 {
 
 .btn-accent:hover {
   background: #ffd766;
+}
+
+.btn:disabled:hover {
+  background: var(--panel);
 }
 
 .btn:disabled {
@@ -229,6 +238,31 @@ h3 {
   }
   100% {
     transform: scale(1);
+  }
+}
+
+/* A playful little side-to-side wiggle. */
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-8deg) scale(1.08);
+  }
+  75% {
+    transform: rotate(8deg) scale(1.08);
+  }
+}
+
+/* Gentle floating up and down. */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
   }
 }
 

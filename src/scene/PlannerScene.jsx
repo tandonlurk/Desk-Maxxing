@@ -10,6 +10,7 @@ import PointerPicker from './PointerPicker.jsx'
 import { DEFAULT_FOV } from './cameraViews.js'
 import { getAsset } from '../assets/library.js'
 import { surfaceHeight } from './placement.js'
+import { cssVar } from './cssVar.js'
 
 // The 3D view. The canvas is transparent so the page's baby-blue background
 // shows through behind the scene.
@@ -83,12 +84,13 @@ export default function PlannerScene({
 function Lights() {
   return (
     <>
-      {/* Soft fill: white from above, a blue bounce from below. */}
-      <hemisphereLight args={['#ffffff', '#9fcbe8', 1.6]} />
-      {/* The "sun": casts the shadows. */}
+      {/* Soft fill: warm white from above, a little sky-blue bounce from below. */}
+      <hemisphereLight args={['#fff8ee', '#b5d6ee', 1.55]} />
+      {/* The warm "sun" casts the shadows. */}
       <directionalLight
         position={[160, 360, 220]}
-        intensity={2.2}
+        color={cssVar('--sun')}
+        intensity={2.4}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-320}

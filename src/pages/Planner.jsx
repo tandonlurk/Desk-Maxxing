@@ -172,6 +172,18 @@ export default function Planner() {
           onRedo={history.redo}
         />
 
+        {items.length === 0 && !drag.dragView && (
+          <div className="empty-hint panel">
+            <span className="empty-hint-mark" aria-hidden="true" />
+            <p>Your desk is looking a little bare. Let&apos;s make it cozy!</p>
+            {tab !== 'items' && (
+              <button type="button" className="btn btn-accent" onClick={() => setTab('items')}>
+                Add items
+              </button>
+            )}
+          </div>
+        )}
+
         {selectedItem && (
           <ItemInspector
             item={selectedItem}

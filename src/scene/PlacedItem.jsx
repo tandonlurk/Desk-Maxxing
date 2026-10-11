@@ -11,6 +11,7 @@ import { cssVar } from './cssVar.js'
 const LIFT_HEIGHT = 6 // how high an item floats while being dragged (cm)
 const DROP_HEIGHT = 16 // new items drop in from this high
 const PUFF_TIME = 0.45 // seconds
+const HOVER_LIFT = 1.5 // items rise a touch when the pointer is over them
 const PUFF_COUNT = 8
 const SPARKLE_COUNT = 4
 
@@ -25,6 +26,7 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
   const bodyRef = useRef() // lift + squash/stretch; holds the model
   const puffRef = useRef()
   const sparkleRef = useRef()
+  const ringRef = useRef()
   const controls = useThree((state) => state.controls)
 
   // Animation state lives in a ref: it changes every frame, which shouldn't
@@ -46,6 +48,7 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
       wasLifted: false,
       wasSelected: false,
       exitStarted: false,
+      hovered: false,
       clock: Math.random() * 10,
     }
   }
@@ -75,7 +78,7 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
     }
     a.wasLifted = lifted
     a.wasSelected = selected
-    a.lift.target = lifted ? LIFT_HEIGHT : 0
+    a.lift.target = lifted ? LIFT_HEIGHT : a.hovered && !exiting ? HOVER_LIFT : 0
 
     a.scale.target = exiting ? 0 : 1
     if (exiting && !a.exitStarted) {
@@ -99,7 +102,7 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
     }
 
     // Landed? Squash, and puff unless it was just a hop.
-    if (a.airborne && a.lift.target === 0 && a.lift.value < 0.4) {
+    if (a.airborne && !lifted && a.lift.value < a.lift.target + 0.4) {
       a.airborne = false
       a.squash.velocity -= a.landing === 'hop' ? 2.5 : 5.5
       if (a.landing !== 'hop') {
@@ -117,7 +120,7 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
     bodyRef.current.position.y = a.lift.value
     bodyRef.current.scale.set(wide, scale * squash, wide)
 
-    animatePuff(a, delta, puffRef.current, sparkleRef.current, asset)
+    animatePuff(a, delta, puffRef.current, sparkleRef.current, ringRef.current, asset)
   })
 
   function handlePointerDown(event) {
@@ -141,9 +144,14 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
       onPointerDown={handlePointerDown}
       onPointerOver={(event) => {
         event.stopPropagation()
-        if (!exiting) document.body.style.cursor = 'grab'
+        if (exiting) return
+        anim.current.hovered = true
+        document.body.style.cursor = 'grab'
       }}
-      onPointerOut={() => (document.body.style.cursor = '')}
+      onPointerOut={() => {
+        anim.current.hovered = false
+        document.body.style.cursor = ''
+      }}
     >
       <group ref={bodyRef}>
         <ItemModel asset={asset} color={item.color} />
@@ -163,17 +171,19 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
       )}
 
       <Puff innerRef={puffRef} />
+      <Ripple innerRef={ringRef} />
       <Sparkles innerRef={sparkleRef} />
       {flagged && !exiting && <FlagMarker height={height} />}
     </group>
   )
 }
 
-// Moves the puff and sparkle particles for the current moment of the burst.
-function animatePuff(a, delta, puff, sparkles, asset) {
+// Moves the puff, ripple, and sparkle particles for the current moment of the burst.
+function animatePuff(a, delta, puff, sparkles, ring, asset) {
   if (a.puffTime < 0) {
     puff.visible = false
     sparkles.visible = false
+    ring.visible = false
     return
   }
   a.puffTime += delta
@@ -193,6 +203,11 @@ function animatePuff(a, delta, puff, sparkles, asset) {
     cube.scale.setScalar(Math.max(0.001, 2.6 * (1 - t)))
     cube.rotation.set(t * 3, t * 4, 0)
   })
+
+  // A soft ring spreading out across the surface, like a gentle "plop".
+  ring.visible = true
+  ring.scale.setScalar(spread * 0.9 + 22 * ease)
+  ring.material.opacity = 0.55 * (1 - t)
 
   sparkles.visible = a.sparkles
   sparkles.children.forEach((star, i) => {
@@ -214,6 +229,16 @@ function Puff({ innerRef }) {
         </mesh>
       ))}
     </group>
+  )
+}
+
+// A flat ring lying on the surface (scaled up as it spreads out).
+function Ripple({ innerRef }) {
+  return (
+    <mesh ref={innerRef} rotation-x={-Math.PI / 2} position={[0, 0.3, 0]} visible={false}>
+      <ringGeometry args={[0.86, 1, 40]} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0.5} depthWrite={false} />
+    </mesh>
   )
 }
 

@@ -42,6 +42,10 @@
   height: 22px;
 }
 
+.logo:hover .logo-mark {
+  animation: bob 600ms ease-in-out infinite;
+}
+
 .logo-mark::before {
   content: '';
   position: absolute;
@@ -107,8 +111,9 @@
   position: relative;
   flex: 1;
   min-width: 0;
-  /* The 3D canvas is transparent; this is the background behind the scene. */
-  background: var(--bg);
+  /* The 3D canvas is transparent, so the dotted page background shows
+     through behind the scene. */
+  background: transparent;
 }
 
 /* The bar across the top of the 3D view. Clicks fall through the gaps to the scene. */
@@ -396,6 +401,16 @@
   box-shadow: var(--shadow);
 }
 
+.library-card:hover .library-icon {
+  animation: wiggle 420ms ease-in-out;
+}
+
+/* Cards pop in one after another when the Items tab opens. */
+.library-card {
+  animation: pop-in 280ms var(--snap) backwards;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
+
 .library-card:active {
   transform: translate(2px, 2px);
   box-shadow: 0 0 0 var(--ink);
@@ -410,6 +425,7 @@
 /* A tiny block in the item's color */
 .library-icon {
   flex-shrink: 0;
+  display: block;
   width: 30px;
   height: 30px;
   background: var(--item-color);
@@ -469,6 +485,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
+  animation: pop-in 240ms var(--snap);
 }
 
 .editor-title-row {
@@ -491,7 +508,7 @@
   flex-direction: column;
   gap: 10px;
   padding-top: 14px;
-  border-top: 2px dashed var(--bg-deep);
+  border-top: 2px dashed var(--divider);
 }
 
 .editor-section h3 {
@@ -573,6 +590,41 @@
   font-size: 12px;
   font-weight: 800;
   color: var(--ink-soft);
+}
+
+/* ---------- Empty desk hint ---------- */
+
+.empty-hint {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  max-width: calc(100% - 20px);
+  animation: pop-in 320ms var(--snap) 300ms backwards;
+}
+
+.empty-hint p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.empty-hint .btn {
+  white-space: nowrap;
+}
+
+.empty-hint-mark {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  background: var(--accent-warm);
+  border: var(--border);
+  border-radius: 8px;
+  box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.12);
+  animation: bob 1.6s ease-in-out infinite;
 }
 
 /* ---------- Phones: stack the planner (it can be basic here) ---------- */

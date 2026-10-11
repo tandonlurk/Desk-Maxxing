@@ -21,12 +21,12 @@ export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardA
         <section key={category} className="library-section">
           <h3>{category}</h3>
           <div className="library-grid">
-            {ASSETS.filter((asset) => asset.category === category).map((asset) => (
+            {ASSETS.filter((asset) => asset.category === category).map((asset, index) => (
               <button
                 key={asset.id}
                 type="button"
                 className="library-card"
-                style={{ '--item-color': asset.colorOptions[0].value }}
+                style={{ '--item-color': asset.colorOptions[0].value, '--i': index }}
                 onPointerDown={(event) => {
                   if (event.button !== 0) return
                   event.preventDefault() // no text selection while dragging
