@@ -12,7 +12,8 @@
     "dev": "node scripts/check-port.js && vite",
     "build": "vite build",
     "check-secrets": "node scripts/check-secrets.js",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "sync-assets": "node scripts/sync-assets.js"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

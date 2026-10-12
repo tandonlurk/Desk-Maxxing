@@ -48,3 +48,9 @@ The placement code never imports `registry.js` directly; it goes through
 - Optional `spots: [...]`: Snap-mode spot ids in order of preference (see `SPOT_LABELS` in
   `src/scene/spots.js`). Without it, spots are guessed from words in the id/name/category
   (monitor, keyboard, mouse, lamp, mug, plant, chair, rug, tower, bin…).
+
+## Item models
+- `src/assets/registry.js` builds the library from `src/assets/deskObjects.json` (a copy of
+  `../local-assets/desk-objects.json` plus each model's `baseColor`) and the GLBs in `public/models/`.
+- After regenerating models in `../local-assets/`, run `npm run sync-assets` to copy them in.
+- `src/scene/GlbItem.jsx` draws them; the color picker repaints the parts that are in `baseColor`.

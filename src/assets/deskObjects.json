@@ -1,0 +1,837 @@
+{
+  "schemaVersion": 1,
+  "units": "cm",
+  "dimensionOrder": [
+    "width",
+    "height",
+    "depth"
+  ],
+  "objects": [
+    {
+      "id": "monitor-24",
+      "name": "24-inch monitor",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 54,
+        "height": 42,
+        "depth": 20
+      },
+      "placement": "desktop",
+      "modelPath": "models/monitor-24.glb",
+      "modelingNotes": "Screen, bezel, neck, and base; dimensions include stand.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "monitor-27",
+      "name": "27-inch monitor",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 62,
+        "height": 46,
+        "depth": 23
+      },
+      "placement": "desktop",
+      "modelPath": "models/monitor-27.glb",
+      "modelingNotes": "Screen, bezel, neck, and base; dimensions include stand.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "ultrawide-monitor",
+      "name": "Ultrawide monitor",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 82,
+        "height": 46,
+        "depth": 25
+      },
+      "placement": "desktop",
+      "modelPath": "models/ultrawide-monitor.glb",
+      "modelingNotes": "Wide screen with stand; optional curved panel.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "laptop-open",
+      "name": "Open laptop",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 33,
+        "height": 24,
+        "depth": 24
+      },
+      "placement": "desktop",
+      "modelPath": "models/laptop-open.glb",
+      "modelingNotes": "Keyboard base and hinged display; height is the open screen.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "laptop-closed",
+      "name": "Closed laptop",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 33,
+        "height": 2,
+        "depth": 23
+      },
+      "placement": "desktop",
+      "modelPath": "models/laptop-closed.glb",
+      "modelingNotes": "Thin rounded box with a lid seam.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "tablet",
+      "name": "Tablet",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 18,
+        "height": 0.8,
+        "depth": 25
+      },
+      "placement": "desktop",
+      "modelPath": "models/tablet.glb",
+      "modelingNotes": "Flat rounded slab with screen and camera.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "mini-pc",
+      "name": "Mini PC",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 13,
+        "height": 5,
+        "depth": 13
+      },
+      "placement": "desktop",
+      "modelPath": "models/mini-pc.glb",
+      "modelingNotes": "Small box with vents and front ports.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "desktop-tower",
+      "name": "Desktop tower",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 22,
+        "height": 45,
+        "depth": 42
+      },
+      "placement": "desktop",
+      "modelPath": "models/desktop-tower.glb",
+      "modelingNotes": "Box with vents, feet, and optional glass side panel.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "portable-monitor",
+      "name": "Portable monitor",
+      "category": "Computers & displays",
+      "dimensionsCm": {
+        "width": 36,
+        "height": 23,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/portable-monitor.glb",
+      "modelingNotes": "Thin screen with folding kickstand; dimensions include stand.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "keyboard-full",
+      "name": "Full-size keyboard",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 44,
+        "height": 3,
+        "depth": 14
+      },
+      "placement": "desktop",
+      "modelPath": "models/keyboard-full.glb",
+      "modelingNotes": "Low box, key rows, and number pad.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "keyboard-compact",
+      "name": "Compact keyboard",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 32,
+        "height": 3,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/keyboard-compact.glb",
+      "modelingNotes": "Low box with compact key rows.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "mouse",
+      "name": "Mouse",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 7,
+        "height": 4,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/mouse.glb",
+      "modelingNotes": "Rounded shell with split buttons and scroll wheel.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "trackpad",
+      "name": "Trackpad",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 16,
+        "height": 1,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/trackpad.glb",
+      "modelingNotes": "Thin rounded rectangle.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "mouse-pad",
+      "name": "Mouse pad",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 25,
+        "height": 0.3,
+        "depth": 21
+      },
+      "placement": "desktop",
+      "modelPath": "models/mouse-pad.glb",
+      "modelingNotes": "Flat rectangle with softened corners.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "desk-mat",
+      "name": "Desk mat",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 80,
+        "height": 0.3,
+        "depth": 35
+      },
+      "placement": "desktop",
+      "modelPath": "models/desk-mat.glb",
+      "modelingNotes": "Wide flat rectangle underneath keyboard and mouse.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "wrist-rest",
+      "name": "Keyboard wrist rest",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 36,
+        "height": 2,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/wrist-rest.glb",
+      "modelingNotes": "Long padded rounded block.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "game-controller",
+      "name": "Game controller",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 16,
+        "height": 6,
+        "depth": 11
+      },
+      "placement": "desktop",
+      "modelPath": "models/game-controller.glb",
+      "modelingNotes": "Two grips, buttons, sticks, and shoulder buttons.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "drawing-tablet",
+      "name": "Drawing tablet",
+      "category": "Input & gaming",
+      "dimensionsCm": {
+        "width": 32,
+        "height": 1,
+        "depth": 21
+      },
+      "placement": "desktop",
+      "modelPath": "models/drawing-tablet.glb",
+      "modelingNotes": "Flat tablet with drawing area and shortcut buttons.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "speaker",
+      "name": "Desktop speaker",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 20,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/speaker.glb",
+      "modelingNotes": "One speaker cabinet with circular drivers; duplicate for a pair.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "headphones",
+      "name": "Headphones",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 19,
+        "height": 21,
+        "depth": 9
+      },
+      "placement": "desktop",
+      "modelPath": "models/headphones.glb",
+      "modelingNotes": "Headband and two earcups; dimensions are upright.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "headphone-stand",
+      "name": "Headphone stand",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 25,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/headphone-stand.glb",
+      "modelingNotes": "Weighted base, post, and curved top support.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "earbud-case",
+      "name": "Earbud case",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 6,
+        "height": 3,
+        "depth": 5
+      },
+      "placement": "desktop",
+      "modelPath": "models/earbud-case.glb",
+      "modelingNotes": "Small rounded case with lid seam.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "usb-microphone",
+      "name": "USB microphone on stand",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 28,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/usb-microphone.glb",
+      "modelingNotes": "Base, stem, and microphone grille.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "webcam-on-stand",
+      "name": "Webcam on desktop stand",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 12,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/webcam-on-stand.glb",
+      "modelingNotes": "Camera body, lens, and small base.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "audio-interface",
+      "name": "Audio interface",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 18,
+        "height": 5,
+        "depth": 13
+      },
+      "placement": "desktop",
+      "modelPath": "models/audio-interface.glb",
+      "modelingNotes": "Box with knobs, ports, and indicator lights.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "stream-deck",
+      "name": "Stream control pad",
+      "category": "Audio & video",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 4,
+        "depth": 9
+      },
+      "placement": "desktop",
+      "modelPath": "models/stream-deck.glb",
+      "modelingNotes": "Angled block with a grid of square buttons.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "monitor-riser",
+      "name": "Monitor riser",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 55,
+        "height": 10,
+        "depth": 23
+      },
+      "placement": "desktop",
+      "modelPath": "models/monitor-riser.glb",
+      "modelingNotes": "Raised platform on two supports; place monitor on its top.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "laptop-stand",
+      "name": "Laptop stand",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 28,
+        "height": 16,
+        "depth": 24
+      },
+      "placement": "desktop",
+      "modelPath": "models/laptop-stand.glb",
+      "modelingNotes": "Angled support with front stops and open space below.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "phone-stand",
+      "name": "Phone stand",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 12,
+        "depth": 10
+      },
+      "placement": "desktop",
+      "modelPath": "models/phone-stand.glb",
+      "modelingNotes": "Small tilted backplate, ledge, and base.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "tablet-stand",
+      "name": "Tablet stand",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 15,
+        "height": 18,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/tablet-stand.glb",
+      "modelingNotes": "Wider tilted backplate with a ledge.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "pen-cup",
+      "name": "Pen cup",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 10,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/pen-cup.glb",
+      "modelingNotes": "Open cylinder or box; optional pens.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "desk-organizer",
+      "name": "Desk organizer",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 25,
+        "height": 12,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/desk-organizer.glb",
+      "modelingNotes": "Compartments for pens, cards, and small supplies.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "document-tray",
+      "name": "Document tray",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 26,
+        "height": 6,
+        "depth": 34
+      },
+      "placement": "desktop",
+      "modelPath": "models/document-tray.glb",
+      "modelingNotes": "Shallow tray sized for sheets of paper.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "bookends",
+      "name": "Bookends with books",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 25,
+        "height": 22,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/bookends.glb",
+      "modelingNotes": "Two upright supports around a small row of books.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "catchall-tray",
+      "name": "Catchall tray",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 18,
+        "height": 2,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/catchall-tray.glb",
+      "modelingNotes": "Shallow dish for keys and small items.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "cable-holder",
+      "name": "Cable holder",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 9,
+        "height": 2,
+        "depth": 3
+      },
+      "placement": "desktop",
+      "modelPath": "models/cable-holder.glb",
+      "modelingNotes": "Small bar with grooves for cables.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "usb-hub",
+      "name": "USB hub",
+      "category": "Stands & organization",
+      "dimensionsCm": {
+        "width": 10,
+        "height": 2,
+        "depth": 4
+      },
+      "placement": "desktop",
+      "modelPath": "models/usb-hub.glb",
+      "modelingNotes": "Small box with ports; cable can be optional.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "desk-lamp",
+      "name": "Desk lamp",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 18,
+        "height": 45,
+        "depth": 25
+      },
+      "placement": "desktop",
+      "modelPath": "models/desk-lamp.glb",
+      "modelingNotes": "Base, articulated arm, and shade; depth includes arm reach.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "small-lamp",
+      "name": "Small table lamp",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 16,
+        "height": 28,
+        "depth": 16
+      },
+      "placement": "desktop",
+      "modelPath": "models/small-lamp.glb",
+      "modelingNotes": "Round base, stem, and shade.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "plant-small",
+      "name": "Small potted plant",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 15,
+        "height": 22,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/plant-small.glb",
+      "modelingNotes": "Pot, soil, and foliage; bounds include leaves.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "succulent",
+      "name": "Potted succulent",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 9,
+        "height": 12,
+        "depth": 9
+      },
+      "placement": "desktop",
+      "modelPath": "models/succulent.glb",
+      "modelingNotes": "Small pot with layered thick leaves.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "picture-frame",
+      "name": "Standing picture frame",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 15,
+        "height": 20,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/picture-frame.glb",
+      "modelingNotes": "Frame with rear kickstand.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "desk-clock",
+      "name": "Desk clock",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 7,
+        "depth": 5
+      },
+      "placement": "desktop",
+      "modelPath": "models/desk-clock.glb",
+      "modelingNotes": "Rounded case and clock face or digital display.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "figurine",
+      "name": "Figurine",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 15,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/figurine.glb",
+      "modelingNotes": "Simple customizable character on a small base.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "candle",
+      "name": "Jar candle",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 10,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/candle.glb",
+      "modelingNotes": "Glass cylinder with wax and wick; unlit by default.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "small-vase",
+      "name": "Small vase",
+      "category": "Lighting & decor",
+      "dimensionsCm": {
+        "width": 10,
+        "height": 18,
+        "depth": 10
+      },
+      "placement": "desktop",
+      "modelPath": "models/small-vase.glb",
+      "modelingNotes": "Rounded vessel; flowers can be a separate variant.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "mug",
+      "name": "Mug",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 12,
+        "height": 10,
+        "depth": 9
+      },
+      "placement": "desktop",
+      "modelPath": "models/mug.glb",
+      "modelingNotes": "Cylinder with open top and handle; width includes handle.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "water-bottle",
+      "name": "Water bottle",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 25,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/water-bottle.glb",
+      "modelingNotes": "Cylinder with neck and cap.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "tumbler",
+      "name": "Travel tumbler",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 9,
+        "height": 20,
+        "depth": 9
+      },
+      "placement": "desktop",
+      "modelPath": "models/tumbler.glb",
+      "modelingNotes": "Tapered cylinder with lid.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "coaster",
+      "name": "Coaster",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 10,
+        "height": 0.5,
+        "depth": 10
+      },
+      "placement": "desktop",
+      "modelPath": "models/coaster.glb",
+      "modelingNotes": "Thin disk or square underneath a drink.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "notebook",
+      "name": "Notebook",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 15,
+        "height": 2,
+        "depth": 21
+      },
+      "placement": "desktop",
+      "modelPath": "models/notebook.glb",
+      "modelingNotes": "Flat cover, pages, and optional spiral binding.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "book",
+      "name": "Book",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 16,
+        "height": 3,
+        "depth": 24
+      },
+      "placement": "desktop",
+      "modelPath": "models/book.glb",
+      "modelingNotes": "Cover, spine, and page block.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "sticky-notes",
+      "name": "Sticky note pad",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 1,
+        "depth": 8
+      },
+      "placement": "desktop",
+      "modelPath": "models/sticky-notes.glb",
+      "modelingNotes": "Small stack of square sheets.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "pen",
+      "name": "Pen",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 1,
+        "height": 1,
+        "depth": 14
+      },
+      "placement": "desktop",
+      "modelPath": "models/pen.glb",
+      "modelingNotes": "Thin cylinder with clip; lies flat.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "phone",
+      "name": "Phone lying flat",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 8,
+        "height": 1,
+        "depth": 16
+      },
+      "placement": "desktop",
+      "modelPath": "models/phone.glb",
+      "modelingNotes": "Rounded slab with screen and camera bump.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "wireless-charger",
+      "name": "Wireless charging pad",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 10,
+        "height": 1,
+        "depth": 10
+      },
+      "placement": "desktop",
+      "modelPath": "models/wireless-charger.glb",
+      "modelingNotes": "Thin disk with optional indicator light.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "tissue-box",
+      "name": "Tissue box",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 23,
+        "height": 10,
+        "depth": 12
+      },
+      "placement": "desktop",
+      "modelPath": "models/tissue-box.glb",
+      "modelingNotes": "Box with top opening and one visible tissue.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "glasses",
+      "name": "Glasses",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 14,
+        "height": 4,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/glasses.glb",
+      "modelingNotes": "Two lens frames and unfolded arms.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "calculator",
+      "name": "Calculator",
+      "category": "Everyday essentials",
+      "dimensionsCm": {
+        "width": 9,
+        "height": 2,
+        "depth": 15
+      },
+      "placement": "desktop",
+      "modelPath": "models/calculator.glb",
+      "modelingNotes": "Angled display and button grid.",
+      "baseColor": "#292e3d"
+    }
+  ]
+}
