@@ -1,4 +1,5 @@
-import { Canvas } from '@react-three/fiber'
+import { useEffect, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Desk from './Desk.jsx'
 import Floor from './Floor.jsx'
@@ -24,6 +25,7 @@ export default function PlannerScene({
   misplacedIds,
   dragView,
   picker,
+  snapshot,
   onItemPointerDown,
   onDeselect,
 }) {
@@ -77,11 +79,57 @@ export default function PlannerScene({
       />
       <CameraRig desk={desk} request={view} />
       <PointerPicker picker={picker} />
+      <Snapshot snapshot={snapshot} />
     </Canvas>
   )
 }
 
-function Lights() {
+const SETTLE_TIME = 1.5 // seconds for the desk and items to finish dropping in
+
+// Fills snapshot.current with a function that takes a picture of the scene
+// (a Promise of an image Blob, for thumbnails), once the scene has settled.
+function Snapshot({ snapshot }) {
+  const gl = useThree((state) => state.gl)
+  const scene = useThree((state) => state.scene)
+  const camera = useThree((state) => state.camera)
+  const age = useRef(0)
+
+  useFrame((_, delta) => {
+    if (age.current >= SETTLE_TIME) return
+    age.current += delta
+    if (age.current < SETTLE_TIME) return
+    snapshot.current = () => {
+      // Render right before copying: the canvas is only readable until the
+      // browser shows the frame.
+      gl.render(scene, camera)
+      return toThumbnail(gl.domElement)
+    }
+  })
+
+  useEffect(() => () => (snapshot.current = null), [snapshot])
+
+  return null
+}
+
+const THUMBNAIL_WIDTH = 900
+
+// Copies the (transparent) canvas onto the page's background color, scaled
+// down, as WebP (or PNG where the browser can't make WebP).
+function toThumbnail(source) {
+  const scale = Math.min(1, THUMBNAIL_WIDTH / source.width)
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(source.width * scale)
+  canvas.height = Math.round(source.height * scale)
+  const context = canvas.getContext('2d')
+  context.fillStyle = cssVar('--bg')
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.drawImage(source, 0, 0, canvas.width, canvas.height)
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not take a picture.'))), 'image/webp', 0.85),
+  )
+}
+
+export function Lights() {
   return (
     <>
       {/* Soft fill: warm white from above, a little sky-blue bounce from below. */}

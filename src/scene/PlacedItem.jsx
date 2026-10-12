@@ -141,8 +141,10 @@ export default function PlacedItem({ item, asset, surfaceY, selected, lifted, fl
   return (
     <group
       ref={baseRef}
-      onPointerDown={handlePointerDown}
+      // Without onPointerDown (e.g. viewing someone else's setup) items can't be grabbed.
+      onPointerDown={onPointerDown && handlePointerDown}
       onPointerOver={(event) => {
+        if (!onPointerDown) return
         event.stopPropagation()
         if (exiting) return
         anim.current.hovered = true

@@ -19,13 +19,21 @@ committed separately.
   shrinking the desk (items get nudged back on or flagged red).
 - R3F ignores synthetic pointer events dispatched from scripts, so test scene clicks/drags with
   real mouse input. Library-card drags use window listeners and do work with synthetic events.
+- Board / 1v1 / publishing: publish from the planner (thumbnail, title, tags), find it on /board,
+  filter by tags, vote in 1v1 (←/→), open /s/:id, Remix it (Undo restores your desk), delete it.
+  These need Supabase configured (`supabase/README.md`); without it the board says it isn't connected.
 - While another session is using port 5173, test with `npx vite --port 5174`.
+- Browser automation tabs can be hidden, which pauses requestAnimationFrame: the 3D view then looks
+  blank or frozen and thumbnails hang. Take a screenshot first (it makes the tab visible) before
+  concluding the scene is broken.
 
 ## Conventions
 - Plain JS + React, R3F/drei for 3D, plain CSS with variables from `src/styles/theme.css`.
 - All measurements are stored in **cm**; the scene uses 1 unit = 1 cm. Convert only for display
   (`src/units.js`).
-- Only `src/data/storage.js` may touch localStorage or Supabase.
+- Only `src/data/storage.js` may touch localStorage or Supabase. The schema lives in
+  `supabase/migrations/` (add new files; don't edit applied ones). Points/wins/losses only change
+  through the `cast_vote` database function, never from the client.
 - Call `playSfx(name)` from `src/sfx.js` at key moments; never play audio elsewhere.
 - Ask the owner before adding dependencies.
 - `three` is pinned to 0.182.x: from r183 on, React Three Fiber 9 triggers a

@@ -9,8 +9,8 @@ const MODES = [
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
-// The bar across the top of the 3D view: placement mode, camera views, undo/redo.
-export default function StageToolbar({ mode, onModeChange, onView, canUndo, canRedo, onUndo, onRedo }) {
+// The bar across the top of the 3D view: placement mode, camera views, undo/redo, publish.
+export default function StageToolbar({ mode, onModeChange, onView, canUndo, canRedo, onUndo, onRedo, canPublish, onPublish }) {
   return (
     <div className="stage-toolbar">
       <div className="placement-mode" title="Snap: items lock into suggested spots. Free: drag anywhere, precisely.">
@@ -38,6 +38,15 @@ export default function StageToolbar({ mode, onModeChange, onView, canUndo, canR
           title={isMac ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
         >
           Redo <Icon name="redo" size={14} />
+        </button>
+        <button
+          type="button"
+          className="btn btn-small btn-accent"
+          onClick={onPublish}
+          disabled={!canPublish}
+          title={canPublish ? 'Share this setup on the board' : 'Add some items first'}
+        >
+          Publish
         </button>
       </div>
     </div>

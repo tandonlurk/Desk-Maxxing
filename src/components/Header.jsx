@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import AuthButton from './AuthButton.jsx'
 
 export default function Header() {
   return (
@@ -11,7 +12,11 @@ export default function Header() {
         <NavLink to="/" end className="nav-link">
           Planner
         </NavLink>
+        <NavLink to="/board" className="nav-link">
+          Board
+        </NavLink>
       </nav>
+      <AuthButton />
     </header>
   )
 }

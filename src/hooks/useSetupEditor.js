@@ -20,8 +20,8 @@ export function makeItemId() {
 // Everything that changes the setup (the desk and the items on it), with
 // undo/redo. Actions that can fail (no room) return false so the page can
 // show a message.
-export function useSetupEditor() {
-  const history = useUndoable({ desk: DEFAULT_DESK, items: [] })
+export function useSetupEditor(initialSetup = null) {
+  const history = useUndoable(initialSetup || { desk: DEFAULT_DESK, items: [] })
   const { desk, items } = history.present
   const { update, presentRef } = history
 
@@ -166,10 +166,14 @@ export function useSetupEditor() {
     [presentRef, nudgeItem],
   )
 
+  // Swap in a whole different setup (e.g. remixing one from the board), as one undo step.
+  const replaceSetup = useCallback((setup) => update(setup), [update])
+
   return {
     desk,
     items,
     history,
+    replaceSetup,
     updateDesk,
     changeItem,
     addItem,

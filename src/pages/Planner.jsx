@@ -1,9 +1,11 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import DeskEditor from '../components/DeskEditor.jsx'
 import LibraryPanel from '../components/LibraryPanel.jsx'
 import ItemInspector from '../components/ItemInspector.jsx'
 import StageToolbar from '../components/StageToolbar.jsx'
 import Segmented from '../components/Segmented.jsx'
+import PublishDialog from '../components/PublishDialog.jsx'
 import PlannerScene from '../scene/PlannerScene.jsx'
 import { useSetupEditor } from '../hooks/useSetupEditor.js'
 import { useItemDrag } from '../hooks/useItemDrag.js'
@@ -14,6 +16,7 @@ import { getMisplacedIds } from '../scene/placement.js'
 import { SPOT_LABELS } from '../scene/spots.js'
 import { CM_PER_INCH } from '../units.js'
 import { playSfx } from '../sfx.js'
+import { loadDraft, readSetup, saveDraft } from '../data/storage.js'
 
 const SIDEBAR_TABS = [
   { id: 'desk', name: 'Desk' },
@@ -26,8 +29,12 @@ const HELP = {
 }
 
 export default function Planner() {
-  const editor = useSetupEditor()
+  // Pick up where you left off (also after signing in, which reloads the page).
+  const [draft] = useState(loadDraft)
+  const editor = useSetupEditor(draft)
   const { desk, items, history } = editor
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const [units, setUnits] = useState('in')
   const [tab, setTab] = useState('desk')
@@ -37,6 +44,26 @@ export default function Planner() {
   const [view, setView] = useState({ name: 'default', id: 0, instant: true })
   const [message, notify] = useMessage()
   const picker = useRef(null) // filled in by the 3D scene
+  const snapshot = useRef(null) // also filled in by the 3D scene
+  const [publishing, setPublishing] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => saveDraft({ desk, items }), 300)
+    return () => clearTimeout(timer)
+  }, [desk, items])
+
+  // "Remix" on a board setup comes here with that setup. Loading it is one
+  // undo step, so Undo brings your own desk back.
+  const remixed = useRef(null)
+  useEffect(() => {
+    const remix = location.state?.remix
+    if (!remix || remixed.current === location.key) return
+    remixed.current = location.key
+    editor.replaceSetup(readSetup(remix.setup))
+    setSelectedId(null)
+    notify(`Remixing “${remix.title}”. Undo brings your old desk back.`)
+    navigate('.', { replace: true, state: null })
+  }, [location, editor, navigate, notify])
 
   const drag = useItemDrag({ editor, picker, mode, units, select: setSelectedId, notify })
 
@@ -84,6 +111,7 @@ export default function Planner() {
   }
 
   useKeyboardShortcuts((event) => {
+    if (publishing) return // the dialog handles its own keys
     const mod = event.metaKey || event.ctrlKey
     const key = event.key.toLowerCase()
 
@@ -129,6 +157,19 @@ export default function Planner() {
     editor.nudgeItem(selectedId, dir.x * step, dir.z * step)
   }
 
+  // The 3D view can still be starting up right after the page opens, so give
+  // it up to ~4 seconds.
+  const takePicture = useMemo(
+    () => async () => {
+      for (let frame = 0; frame < 240 && !snapshot.current; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      }
+      if (!snapshot.current) throw new Error('The 3D view isn’t ready yet. Try again in a moment.')
+      return snapshot.current()
+    },
+    [],
+  )
+
   const stageClass = `planner-stage ${drag.dragView ? 'is-dragging' : ''}`
 
   return (
@@ -158,6 +199,7 @@ export default function Planner() {
           misplacedIds={misplacedIds}
           dragView={drag.dragView}
           picker={picker}
+          snapshot={snapshot}
           onItemPointerDown={drag.startMove}
           onDeselect={() => setSelectedId(null)}
         />
@@ -170,6 +212,12 @@ export default function Planner() {
           canRedo={history.canRedo}
           onUndo={history.undo}
           onRedo={history.redo}
+          canPublish={items.length > 0}
+          onPublish={() => {
+            playSfx('click')
+            setSelectedId(null) // no selection outline in the picture
+            setPublishing(true)
+          }}
         />
 
         {items.length === 0 && !drag.dragView && (
@@ -201,6 +249,15 @@ export default function Planner() {
             onDuplicate={duplicateSelected}
             onDelete={deleteSelected}
             onClose={() => setSelectedId(null)}
+          />
+        )}
+
+        {publishing && (
+          <PublishDialog
+            setup={{ desk, items }}
+            takePicture={takePicture}
+            onPublished={(id) => navigate(`/s/${id}`)}
+            onClose={() => setPublishing(false)}
           />
         )}
 
