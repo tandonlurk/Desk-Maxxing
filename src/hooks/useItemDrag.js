@@ -8,6 +8,7 @@ import {
   surfaceHeight,
 } from '../scene/placement.js'
 import { getSuggestedSpots } from '../scene/spots.js'
+import { findNearestFreeOnWall, makeWallChecker, rayToWall, slideOnWall } from '../scene/wallPlacement.js'
 import { CM_PER_INCH } from '../units.js'
 import { playSfx } from '../sfx.js'
 import { makeItemId } from './useSetupEditor.js'
@@ -88,6 +89,10 @@ export function useItemDrag({ editor, picker, mode, units, select, notify }) {
       const { editor, picker, mode, units } = latest.current
       const setup = editor.history.presentRef.current
       const asset = getAsset(drag.assetId)
+      if (asset.placement === 'wall') {
+        moveOnWall(drag, event, setup, asset)
+        return
+      }
       const planeY = surfaceHeight(setup.desk, asset)
 
       if (!drag.started) {
@@ -95,7 +100,7 @@ export function useItemDrag({ editor, picker, mode, units, select, notify }) {
         drag.started = true
         drag.spots =
           mode === 'snap'
-            ? getSuggestedSpots(setup.desk, setup.items, asset, drag.itemId).filter((spot) => spot.free)
+            ? getSuggestedSpots(setup.desk, setup.items, asset, drag.itemId, setup.room).filter((spot) => spot.free)
             : []
         // Remember where on the item it was grabbed, so it doesn't jump to
         // center itself under the pointer.
@@ -131,7 +136,7 @@ export function useItemDrag({ editor, picker, mode, units, select, notify }) {
 
       if (drag.itemId === null) {
         // A new item appears (pops in) the first time the pointer is over the scene.
-        const isValid = makePlacementChecker(setup.desk, setup.items)
+        const isValid = makePlacementChecker(setup.desk, setup.items, setup.room)
         const position = findNearestFree(isValid, { id: null, assetId: drag.assetId, position: target, rotation }, 120)
         if (!position) return
         drag.itemId = editor.addItem(drag.assetId, { position, rotation }, { group: drag.group, mergeWindow: Infinity })
@@ -141,7 +146,7 @@ export function useItemDrag({ editor, picker, mode, units, select, notify }) {
           (current) => {
             const item = current.items.find((i) => i.id === drag.itemId)
             if (!item) return current
-            const isValid = makePlacementChecker(current.desk, current.items)
+            const isValid = makePlacementChecker(current.desk, current.items, current.room)
 
             // Turn first (when locking into or leaving a spot). If the turned
             // item doesn't fit where it is, find room nearby or don't turn.
@@ -169,6 +174,58 @@ export function useItemDrag({ editor, picker, mode, units, select, notify }) {
         drag.activeSpotId = spotId
         setDragView((view) => view && { ...view, activeSpotId: spotId })
       }
+    }
+
+    // Dragging a wall item: it follows the pointer across whichever wall is
+    // under it (seen from inside the room), and can hop between walls.
+    function moveOnWall(drag, event, setup, asset) {
+      const { editor, picker, mode, units } = latest.current
+      if (!drag.started) {
+        if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < DRAG_THRESHOLD) return
+        drag.started = true
+        drag.spots = []
+        drag.grab = null
+        if (drag.kind === 'move') playSfx('pickup')
+        setDragView({ itemId: drag.itemId, assetId: drag.assetId, spots: [], activeSpotId: null })
+      }
+
+      const ray = picker.current?.ray(event.clientX, event.clientY)
+      drag.overCanvas = Boolean(ray)
+      const hit = ray && rayToWall(setup.room, ray)
+      if (!hit) return
+
+      // Remember where on the item it was grabbed (on its own wall), so it
+      // doesn't jump. On another wall, hold it by the middle.
+      if (drag.kind === 'move' && !drag.grab) {
+        const item = setup.wallItems.find((i) => i.id === drag.itemId)
+        if (item && item.wall === hit.wall) drag.grab = { wall: hit.wall, u: hit.u - item.u, y: hit.y - item.y }
+      }
+      const grab = drag.grab?.wall === hit.wall ? drag.grab : { u: 0, y: asset.size.height / 2 }
+      let target = { wall: hit.wall, u: hit.u - grab.u, y: hit.y - grab.y }
+      if (mode === 'snap') {
+        const grid = gridSize(units)
+        target = { ...target, u: Math.round(target.u / grid) * grid, y: Math.round(target.y / grid) * grid }
+      }
+
+      if (drag.itemId === null) {
+        const isValid = makeWallChecker(setup.room, setup.wallItems)
+        const spot = findNearestFreeOnWall(isValid, { id: null, assetId: drag.assetId, ...target }, 120)
+        if (!spot) return
+        drag.itemId = editor.addWallItem(drag.assetId, { wall: target.wall, ...spot }, { group: drag.group, mergeWindow: Infinity })
+        setDragView((view) => view && { ...view, itemId: drag.itemId })
+        return
+      }
+
+      editor.history.update(
+        (current) => {
+          const item = current.wallItems.find((i) => i.id === drag.itemId)
+          if (!item) return current
+          const next = slideOnWall(makeWallChecker(current.room, current.wallItems), item, target)
+          if (next.wall === item.wall && next.u === item.u && next.y === item.y) return current
+          return { ...current, wallItems: current.wallItems.map((i) => (i.id === item.id ? { ...i, ...next } : i)) }
+        },
+        { group: drag.group, mergeWindow: Infinity },
+      )
     }
 
     function handleUp() {

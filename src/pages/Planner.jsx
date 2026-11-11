@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import DeskEditor from '../components/DeskEditor.jsx'
+import RoomEditor, { PaintSection } from '../components/RoomEditor.jsx'
+import WishlistPanel from '../components/WishlistPanel.jsx'
+import ChallengeDialog from '../components/ChallengeDialog.jsx'
 import LibraryPanel from '../components/LibraryPanel.jsx'
 import ItemInspector from '../components/ItemInspector.jsx'
 import StageToolbar from '../components/StageToolbar.jsx'
@@ -13,63 +16,114 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js'
 import { useMessage } from '../hooks/useMessage.js'
 import { getAsset } from '../assets/library.js'
 import { getMisplacedIds } from '../scene/placement.js'
+import { getMisplacedWallIds, wallRightSign } from '../scene/wallPlacement.js'
 import { SPOT_LABELS } from '../scene/spots.js'
 import { CM_PER_INCH } from '../units.js'
 import { playSfx } from '../sfx.js'
 import { loadDraft, readSetup, saveDraft } from '../data/storage.js'
 
 const SIDEBAR_TABS = [
+  { id: 'room', name: 'Room' },
   { id: 'desk', name: 'Desk' },
   { id: 'items', name: 'Items' },
 ]
+
+// Designing for someone else's challenge: their room and desk are fixed.
+const CHALLENGE_TABS = [
+  { id: 'brief', name: 'Brief' },
+  { id: 'items', name: 'Items' },
+  { id: 'paint', name: 'Paint' },
+]
+
+const ids = (setup) => new Set([...setup.items, ...setup.wallItems].map((item) => item.id))
+
+// Your entry in progress for a challenge: the creator's base (always as it
+// is in the room, locked) plus what you've added and your paint job.
+function startingEntry(base, draft) {
+  if (!draft) return base
+  const baseIds = ids(base)
+  return {
+    ...base,
+    room: { ...base.room, paint: draft.room.paint, floor: draft.room.floor },
+    items: [...base.items, ...draft.items.filter((item) => !baseIds.has(item.id))],
+    wallItems: [...base.wallItems, ...draft.wallItems.filter((item) => !baseIds.has(item.id))],
+  }
+}
 
 const HELP = {
   snap: 'Snap: items lock into glowing spots · R rotates · Delete removes',
   free: 'Free: drag anywhere · arrow keys nudge (Shift = bigger steps) · R rotates',
 }
 
-export default function Planner() {
+// The planner. With a `challenge` (a room from the database), you're designing
+// an entry on top of that room's base instead of your own setup.
+export default function Planner({ challenge = null }) {
+  const roomCode = challenge?.code ?? null
   // Pick up where you left off (also after signing in, which reloads the page).
-  const [draft] = useState(loadDraft)
+  const [draft] = useState(() =>
+    challenge ? startingEntry(challenge.base, loadDraft(roomCode)) : loadDraft(),
+  )
+  const [lockedIds] = useState(() => (challenge ? ids(challenge.base) : null))
   const editor = useSetupEditor(draft)
-  const { desk, items, history } = editor
+  const { room, desk, items, wallItems, history } = editor
   const location = useLocation()
   const navigate = useNavigate()
 
   const [units, setUnits] = useState('in')
-  const [tab, setTab] = useState('desk')
+  const [tab, setTab] = useState(challenge ? 'brief' : 'room')
   const [mode, setMode] = useState('snap')
   const [selectedId, setSelectedId] = useState(null)
   // Bumping `id` re-triggers a view even if it's the same one clicked twice.
-  const [view, setView] = useState({ name: 'default', id: 0, instant: true })
+  const [view, setView] = useState({ name: 'room', id: 0, instant: true })
+  const [paintTarget, setPaintTarget] = useState('back')
+  const [bucket, setBucket] = useState(null) // paint color for clicking walls, or null
   const [message, notify] = useMessage()
   const picker = useRef(null) // filled in by the 3D scene
   const snapshot = useRef(null) // also filled in by the 3D scene
   const [publishing, setPublishing] = useState(false)
+  const [challenging, setChallenging] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => saveDraft({ desk, items }), 300)
+    const timer = setTimeout(() => saveDraft({ room, desk, items, wallItems }, roomCode), 300)
     return () => clearTimeout(timer)
-  }, [desk, items])
+  }, [room, desk, items, wallItems, roomCode])
 
   // "Remix" on a board setup comes here with that setup. Loading it is one
   // undo step, so Undo brings your own desk back.
   const remixed = useRef(null)
   useEffect(() => {
     const remix = location.state?.remix
-    if (!remix || remixed.current === location.key) return
+    if (!remix || challenge || remixed.current === location.key) return
     remixed.current = location.key
     editor.replaceSetup(readSetup(remix.setup))
     setSelectedId(null)
     notify(`Remixing “${remix.title}”. Undo brings your old desk back.`)
     navigate('.', { replace: true, state: null })
-  }, [location, editor, navigate, notify])
+  }, [location, editor, navigate, notify, challenge])
 
   const drag = useItemDrag({ editor, picker, mode, units, select: setSelectedId, notify })
 
-  const selectedItem = items.find((item) => item.id === selectedId) || null
+  const selectedItem = items.find((item) => item.id === selectedId) || wallItems.find((item) => item.id === selectedId) || null
   const selectedAsset = selectedItem ? getAsset(selectedItem.assetId) : null
-  const misplacedIds = useMemo(() => getMisplacedIds(desk, items), [desk, items])
+  const selectedOnWall = selectedAsset?.placement === 'wall'
+  const misplacedIds = useMemo(
+    () => [...getMisplacedIds(desk, items, room), ...getMisplacedWallIds(room, wallItems)],
+    [desk, items, room, wallItems],
+  )
+  // In a challenge, what you added (the base doesn't count).
+  const itemCount = items.length + wallItems.length - (lockedIds?.size ?? 0)
+  const placed = useMemo(() => {
+    const counts = new Map()
+    for (const item of [...items, ...wallItems]) {
+      if (lockedIds?.has(item.id)) continue
+      counts.set(item.assetId, (counts.get(item.assetId) || 0) + 1)
+    }
+    return counts
+  }, [items, wallItems, lockedIds])
+  const wanted = useMemo(
+    () => (challenge ? new Set(challenge.wishlist.map((wish) => wish.assetId).filter(Boolean)) : null),
+    [challenge],
+  )
 
   function showView(name) {
     playSfx('click')
@@ -96,6 +150,10 @@ export default function Planner() {
 
   function rotateSelected(delta, options) {
     if (!selectedId) return
+    if (selectedOnWall) {
+      notify('Wall pieces always face into the room.')
+      return
+    }
     if (editor.rotateItem(selectedId, delta, options)) playSfx('rotate')
     else notify('Not enough room to turn that.')
   }
@@ -111,7 +169,7 @@ export default function Planner() {
   }
 
   useKeyboardShortcuts((event) => {
-    if (publishing) return // the dialog handles its own keys
+    if (publishing || challenging) return // the dialog handles its own keys
     const mod = event.metaKey || event.ctrlKey
     const key = event.key.toLowerCase()
 
@@ -153,6 +211,13 @@ export default function Planner() {
       arrowright: axes.right,
       arrowleft: { x: -axes.right.x, z: -axes.right.z },
     }
+    if (selectedOnWall) {
+      // On a wall, up/down move it up and down, left/right move it along the wall.
+      const sign = wallRightSign(selectedItem.wall)
+      const moves = { arrowup: [0, step], arrowdown: [0, -step], arrowright: [sign * step, 0], arrowleft: [-sign * step, 0] }
+      editor.nudgeWallItem(selectedId, ...moves[key])
+      return
+    }
     const dir = directions[key]
     editor.nudgeItem(selectedId, dir.x * step, dir.z * step)
   }
@@ -175,8 +240,45 @@ export default function Planner() {
   return (
     <div className="planner">
       <aside className="planner-sidebar panel">
-        <Segmented label="Sidebar" options={SIDEBAR_TABS} value={tab} onChange={setTab} />
-        {tab === 'desk' ? (
+        <Segmented label="Sidebar" options={challenge ? CHALLENGE_TABS : SIDEBAR_TABS} value={tab} onChange={setTab} />
+        {tab === 'brief' ? (
+          <>
+            <WishlistPanel challenge={challenge} placed={placed} onAdd={addFromKeyboard} />
+            <button type="button" className="btn btn-accent next-step" onClick={() => setTab('items')}>
+              Start adding items →
+            </button>
+          </>
+        ) : tab === 'paint' ? (
+          <div className="desk-editor">
+            <PaintSection
+              room={room}
+              onChange={editor.updateRoom}
+              onPaint={editor.paint}
+              paintTarget={paintTarget}
+              onPaintTarget={setPaintTarget}
+              bucket={bucket}
+              onBucket={setBucket}
+            />
+          </div>
+        ) : tab === 'room' ? (
+          <>
+            <RoomEditor
+              room={room}
+              desk={desk}
+              units={units}
+              onChange={editor.updateRoom}
+              onPaint={editor.paint}
+              onUnitsChange={setUnits}
+              paintTarget={paintTarget}
+              onPaintTarget={setPaintTarget}
+              bucket={bucket}
+              onBucket={setBucket}
+            />
+            <button type="button" className="btn btn-accent next-step" onClick={() => setTab('desk')}>
+              Next: your desk →
+            </button>
+          </>
+        ) : tab === 'desk' ? (
           <>
             <DeskEditor desk={desk} units={units} onChange={editor.updateDesk} onUnitsChange={setUnits} />
             <button type="button" className="btn btn-accent next-step" onClick={() => setTab('items')}>
@@ -184,14 +286,29 @@ export default function Planner() {
             </button>
           </>
         ) : (
-          <LibraryPanel units={units} onCardPointerDown={drag.startNew} onCardKeyboardAdd={addFromKeyboard} />
+          <LibraryPanel
+            units={units}
+            onCardPointerDown={drag.startNew}
+            onCardKeyboardAdd={addFromKeyboard}
+            highlight={wanted}
+          />
         )}
       </aside>
 
       <section className={stageClass} aria-label="3D desk view">
         <PlannerScene
+          room={room}
           desk={desk}
           items={items}
+          wallItems={wallItems}
+          lockedIds={lockedIds}
+          onPaint={
+            bucket &&
+            ((target) => {
+              playSfx('place')
+              editor.paint(target, bucket)
+            })
+          }
           view={view}
           units={units}
           mode={mode}
@@ -212,7 +329,17 @@ export default function Planner() {
           canRedo={history.canRedo}
           onUndo={history.undo}
           onRedo={history.redo}
-          canPublish={items.length > 0}
+          canPublish={itemCount > 0}
+          publishLabel={challenge ? 'Submit entry' : 'Publish'}
+          onChallenge={
+            challenge
+              ? null
+              : () => {
+                  playSfx('click')
+                  setSelectedId(null)
+                  setChallenging(true)
+                }
+          }
           onPublish={() => {
             playSfx('click')
             setSelectedId(null) // no selection outline in the picture
@@ -220,10 +347,14 @@ export default function Planner() {
           }}
         />
 
-        {items.length === 0 && !drag.dragView && (
+        {itemCount === 0 && !drag.dragView && !['room', 'brief'].includes(tab) && (
           <div className="empty-hint panel">
             <span className="empty-hint-mark" aria-hidden="true" />
-            <p>Your desk is looking a little bare. Let&apos;s make it cozy!</p>
+            <p>
+              {challenge
+                ? `Make @${challenge.username}'s space amazing!`
+                : 'Your desk is looking a little bare. Let’s make it cozy!'}
+            </p>
             {tab !== 'items' && (
               <button type="button" className="btn btn-accent" onClick={() => setTab('items')}>
                 Add items
@@ -236,6 +367,7 @@ export default function Planner() {
           <ItemInspector
             item={selectedItem}
             asset={selectedAsset}
+            room={room}
             desk={desk}
             units={units}
             misplaced={misplacedIds.includes(selectedItem.id)}
@@ -246,6 +378,11 @@ export default function Planner() {
                 notify("Can't go there: it would hang off the desk or bump into something.")
               }
             }}
+            onWallSpot={(spot) => {
+              if (!editor.setWallItemSpot(selectedItem.id, spot)) {
+                notify("Can't go there: it would hang off the wall or bump into something.")
+              }
+            }}
             onDuplicate={duplicateSelected}
             onDelete={deleteSelected}
             onClose={() => setSelectedId(null)}
@@ -254,10 +391,19 @@ export default function Planner() {
 
         {publishing && (
           <PublishDialog
-            setup={{ desk, items }}
+            setup={{ room, desk, items, wallItems }}
             takePicture={takePicture}
-            onPublished={(id) => navigate(`/s/${id}`)}
+            onPublished={(id) => navigate(challenge ? `/r/${challenge.code}` : `/s/${id}`)}
             onClose={() => setPublishing(false)}
+            challenge={challenge}
+          />
+        )}
+
+        {challenging && (
+          <ChallengeDialog
+            setup={{ room, desk, items, wallItems }}
+            takePicture={takePicture}
+            onClose={() => setChallenging(false)}
           />
         )}
 

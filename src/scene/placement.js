@@ -7,15 +7,16 @@
 // An item's "footprint" is the rectangle it covers, seen from above. A
 // placement is valid when:
 //   - a desk item's footprint is completely on the desktop, or a floor item's
-//     footprint is on the floor,
+//     footprint is on the floor (inside the room, when there is one),
 //   - a floor item too tall to fit under the desk isn't under the desk, and
 //   - it doesn't overlap another item on the same surface. Flat items (mats,
 //     rugs) never block anything, so a keyboard can sit on a desk mat.
 
 import { getAsset } from '../assets/library.js'
 import { TOP_THICKNESS, getDeskBounds, getDeskOutline } from './deskGeometry.js'
+import { floorPolygonInDesk } from './roomGeometry.js'
 
-// Floor items stay on the 520 cm floor tile (with a little margin).
+// Without a room, floor items stay on a 520 cm floor tile (with a little margin).
 export const FLOOR_HALF_SIZE = 255
 
 // Snapping rotation to 15° steps.
@@ -111,9 +112,13 @@ function shrinkTowardCenter(corners, amount) {
   })
 }
 
-function footprintOnFloor(corners) {
+// `floor` is the room's floor outline in desk coordinates, or null for no room.
+function footprintOnFloor(corners, floor) {
+  if (floor) return shrinkTowardCenter(corners, TOLERANCE).every(([x, z]) => pointInPolygon(x, z, floor))
   return corners.every(([x, z]) => Math.abs(x) <= FLOOR_HALF_SIZE && Math.abs(z) <= FLOOR_HALF_SIZE)
 }
+
+const floorOf = (room) => (room ? floorPolygonInDesk(room) : null)
 
 // Does a footprint overlap the desk's outline at all (seen from above)?
 // It does if a corner of one is inside the other, or any of their edges cross.
@@ -143,9 +148,9 @@ function tooTallForUnderDesk(desk, asset) {
 }
 
 // Is the item on the right surface, ignoring other items?
-function onItsSurface(desk, outline, asset, corners) {
+function onItsSurface(desk, outline, asset, corners, floor) {
   if (asset.placement === 'floor') {
-    if (!footprintOnFloor(corners)) return false
+    if (!footprintOnFloor(corners, floor)) return false
     return !(tooTallForUnderDesk(desk, asset) && footprintUnderDesk(corners, outline))
   }
   return footprintOnDesk(corners, outline)
@@ -175,9 +180,11 @@ function project(corners, nx, nz) {
 }
 
 // Returns a function that answers "would this item be OK here?" for the given
-// desk and items. Building it once and reusing it keeps searches fast.
-export function makePlacementChecker(desk, items) {
+// desk and items (and room, if any). Building it once and reusing it keeps
+// searches fast.
+export function makePlacementChecker(desk, items, room = null) {
   const outline = getDeskOutline(desk)
+  const floor = floorOf(room)
   const obstacles = items.map((item) => {
     const asset = getAsset(item.assetId)
     return { id: item.id, placement: asset.placement, flat: asset.flat, corners: getFootprint(item) }
@@ -187,7 +194,7 @@ export function makePlacementChecker(desk, items) {
     const asset = getAsset(candidate.assetId)
     const corners = getFootprint(candidate)
 
-    if (!onItsSurface(desk, outline, asset, corners)) return false
+    if (!onItsSurface(desk, outline, asset, corners, floor)) return false
     if (asset.flat) return true
 
     return !obstacles.some(
@@ -202,8 +209,8 @@ export function makePlacementChecker(desk, items) {
 
 // Only checks the surface (ignores other items). Used to flag items that
 // don't fit anymore after the desk was resized.
-export function isOnItsSurface(desk, item) {
-  return onItsSurface(desk, getDeskOutline(desk), getAsset(item.assetId), getFootprint(item))
+export function isOnItsSurface(desk, item, room = null) {
+  return onItsSurface(desk, getDeskOutline(desk), getAsset(item.assetId), getFootprint(item), floorOf(room))
 }
 
 // Moving from `from` toward `to`: go all the way if that spot is free;
@@ -257,10 +264,10 @@ export function findNearestFree(isValid, item, maxDistance = 150) {
 // longer fits (fell off the desk, or the desk now covers a tall floor item)
 // to the nearest free spot. Items with no free spot nearby are left where
 // they are (and get flagged by getMisplacedIds).
-export function fitItemsToDesk(desk, items) {
+export function fitItemsToDesk(desk, items, room = null) {
   let result = items
   for (const item of items) {
-    const isValid = makePlacementChecker(desk, result)
+    const isValid = makePlacementChecker(desk, result, room)
     if (isValid(item)) continue
     const position = findNearestFree(isValid, item, 80)
     if (position) result = result.map((other) => (other.id === item.id ? { ...other, position } : other))
@@ -268,8 +275,8 @@ export function fitItemsToDesk(desk, items) {
   return result
 }
 
-export function getMisplacedIds(desk, items) {
-  return items.filter((item) => !isOnItsSurface(desk, item)).map((item) => item.id)
+export function getMisplacedIds(desk, items, room = null) {
+  return items.filter((item) => !isOnItsSurface(desk, item, room)).map((item) => item.id)
 }
 
 // How far an item's sides are from the desk edges (cm), measured straight

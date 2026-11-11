@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import TagPicker from './TagPicker.jsx'
+import NameForm from './NameForm.jsx'
 import { MAX_TAGS } from '../assets/tags.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js'
-import { BACKEND_READY, publishSetup, signInWithGitHub } from '../data/storage.js'
+import { BACKEND_READY, publishSetup } from '../data/storage.js'
 import { playSfx } from '../sfx.js'
 
 // Share the current setup on the board: a picture of the 3D view (exactly as
 // the camera shows it now), a title, a description, and tags.
-export default function PublishDialog({ setup, takePicture, onPublished, onClose }) {
+// With a `challenge` ({ id, title, username }), it submits your entry for
+// that room instead (submitting again updates it).
+export default function PublishDialog({ setup, takePicture, onPublished, onClose, challenge = null }) {
   const user = useAuth()
   const [picture, setPicture] = useState(null) // { blob, url }
   const [title, setTitle] = useState('')
@@ -52,6 +55,7 @@ export default function PublishDialog({ setup, takePicture, onPublished, onClose
         tags,
         setup,
         thumbnail: picture.blob,
+        roomId: challenge?.id ?? null,
       })
       playSfx('publish')
       onPublished(id)
@@ -61,19 +65,11 @@ export default function PublishDialog({ setup, takePicture, onPublished, onClose
     }
   }
 
-  async function signIn() {
-    try {
-      await signInWithGitHub()
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
   return (
     <div className="modal-backdrop" onPointerDown={(event) => event.target === event.currentTarget && !busy && onClose()}>
       <form className="modal panel" onSubmit={publish} aria-labelledby="publish-title">
         <div className="inspector-head">
-          <h2 id="publish-title">Publish your setup</h2>
+          <h2 id="publish-title">{challenge ? `Submit for @${challenge.username}` : 'Publish your setup'}</h2>
           <button type="button" className="icon-btn" onClick={onClose} disabled={busy} aria-label="Close">
             ×
           </button>
@@ -87,12 +83,7 @@ export default function PublishDialog({ setup, takePicture, onPublished, onClose
         {!BACKEND_READY ? (
           <p className="notice">Publishing needs the backend, which isn&apos;t set up yet (see supabase/README.md).</p>
         ) : user === null ? (
-          <div className="notice">
-            <p>Sign in to publish. Your desk is saved, so you&apos;ll come right back to it.</p>
-            <button type="button" className="btn btn-accent" onClick={signIn}>
-              Sign in with GitHub
-            </button>
-          </div>
+          <NameForm prompt={`Pick a name to ${challenge ? 'submit' : 'publish'}. Your design is saved.`} />
         ) : (
           <>
             <label className="field">
@@ -102,7 +93,7 @@ export default function PublishDialog({ setup, takePicture, onPublished, onClose
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 maxLength={60}
-                placeholder="My cozy corner"
+                placeholder={challenge ? 'Cozy study corner' : 'My cozy corner'}
                 required
                 autoFocus
               />
@@ -131,7 +122,7 @@ export default function PublishDialog({ setup, takePicture, onPublished, onClose
 
         {BACKEND_READY && user && (
           <button type="submit" className="btn btn-accent" disabled={busy || !picture || !title.trim()}>
-            {busy ? 'Publishing…' : 'Publish to the board'}
+            {busy ? 'Sending…' : challenge ? 'Submit my entry' : 'Publish to the board'}
           </button>
         )}
       </form>

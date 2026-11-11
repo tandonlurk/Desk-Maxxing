@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import SetupViewer from '../scene/SetupViewer.jsx'
 import { Author } from '../components/SetupCard.jsx'
+import TackButton from '../components/TackButton.jsx'
 import { tagName } from '../assets/tags.js'
 import { getAsset } from '../assets/library.js'
 import { useAuth } from '../hooks/useAuth.js'
-import { BACKEND_READY, deleteSetup, getSetup } from '../data/storage.js'
+import { BACKEND_READY, deleteSetup, getRoomLink, getSetup } from '../data/storage.js'
 import { playSfx } from '../sfx.js'
 
 // One published setup: walk around it in 3D, see what's on it, and remix it
@@ -17,6 +18,7 @@ export default function SetupPage() {
   const [card, setCard] = useState(undefined) // undefined = loading, null = not found
   const [error, setError] = useState(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [roomLink, setRoomLink] = useState(null) // { code, title } when it's a challenge entry
 
   useEffect(() => {
     if (!BACKEND_READY) return
@@ -30,10 +32,19 @@ export default function SetupPage() {
     }
   }, [id])
 
+  const roomId = card?.roomId
+  useEffect(() => {
+    if (!roomId) return
+    getRoomLink(roomId)
+      .then(setRoomLink)
+      .catch(() => setRoomLink(null))
+  }, [roomId])
+
   // "27-inch monitor ×2", in the order they were added.
   const itemCounts = useMemo(() => {
     const counts = new Map()
-    for (const item of card?.setup.items || []) counts.set(item.assetId, (counts.get(item.assetId) || 0) + 1)
+    const all = card ? [...card.setup.items, ...card.setup.wallItems] : []
+    for (const item of all) counts.set(item.assetId, (counts.get(item.assetId) || 0) + 1)
     return [...counts].map(([assetId, count]) => ({ name: getAsset(assetId).name, count }))
   }, [card])
 
@@ -77,7 +88,7 @@ export default function SetupPage() {
   return (
     <div className="planner setup-page">
       <section className="planner-stage" aria-label="3D view of this setup">
-        <SetupViewer desk={card.setup.desk} items={card.setup.items} />
+        <SetupViewer setup={card.setup} />
         <div className="stage-bottom">
           <p className="stage-help">Drag to look around · scroll to zoom</p>
         </div>
@@ -89,9 +100,15 @@ export default function SetupPage() {
         </Link>
         <h1>{card.title}</h1>
         <Author card={card} />
+        {roomLink && (
+          <Link to={`/r/${roomLink.code}`} className="made-for">
+            Made for the challenge “{roomLink.title}” →
+          </Link>
+        )}
         {card.description && <p className="setup-description">{card.description}</p>}
 
         <div className="setup-stats">
+          <TackButton card={card} size="big" />
           <span className="points">{card.points} pts</span>
           <span>
             {card.wins} {card.wins === 1 ? 'win' : 'wins'} · {card.losses} {card.losses === 1 ? 'loss' : 'losses'}
@@ -109,7 +126,7 @@ export default function SetupPage() {
         )}
 
         <section className="editor-section">
-          <h3>On this desk</h3>
+          <h3>In this setup</h3>
           <ul className="item-list">
             {itemCounts.map(({ name, count }) => (
               <li key={name}>

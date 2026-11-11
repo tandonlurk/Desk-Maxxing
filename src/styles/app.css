@@ -53,7 +53,7 @@
   height: 9px;
   background: var(--accent);
   border: var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .logo-mark::after {
@@ -303,7 +303,7 @@
   padding: 0;
   background: var(--dot);
   border: var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: transform var(--speed) var(--snap);
@@ -430,7 +430,7 @@
   height: 30px;
   background: var(--item-color);
   border: var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.12);
 }
 
@@ -459,7 +459,21 @@
   letter-spacing: 0.5px;
   background: var(--muted-fill);
   border: 2px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
+}
+
+/* Filter chips for library categories (.chip itself is styled with the tags). */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Wishlist items in a challenge stand out in the library. */
+.library-card.is-wanted {
+  background: var(--muted-fill);
+  outline: 3px dashed var(--accent-2);
+  outline-offset: -6px;
 }
 
 /* ---------- Sidebar ---------- */
@@ -580,6 +594,43 @@
   gap: 8px;
 }
 
+/* 8 chunky paint chips in two rows, each with a pixel "shine" corner. */
+.paint-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.paint-swatch {
+  aspect-ratio: 1;
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)) 4px 4px / 8px 8px no-repeat,
+    var(--paint);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition:
+    transform var(--speed) var(--snap),
+    box-shadow var(--speed) var(--snap);
+}
+
+.paint-swatch:hover {
+  transform: translateY(-2px);
+}
+
+.paint-swatch:active,
+.paint-swatch.is-active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.paint-swatch.is-active {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
 .sit-stand strong {
   color: var(--ink);
 }
@@ -622,7 +673,7 @@
   height: 34px;
   background: var(--accent-warm);
   border: var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.12);
   animation: bob 1.6s ease-in-out infinite;
 }
@@ -659,7 +710,7 @@
   width: 22px;
   height: 22px;
   border: 2px solid var(--ink);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
 }
 
 /* ---------- Tags ---------- */
@@ -676,7 +727,7 @@
   color: var(--ink);
   background: var(--panel);
   border: 2px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition:
     transform var(--speed) var(--snap),
@@ -894,7 +945,7 @@ a.tag:hover {
   font-size: 13px;
   background: var(--accent);
   border: 2px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
 }
 
 .load-more {
@@ -940,7 +991,7 @@ a.tag:hover {
   background: var(--accent-2);
   color: #fff;
   border: var(--border);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   animation: wiggle 1.8s ease-in-out infinite;
 }
@@ -1032,7 +1083,7 @@ a.tag:hover {
 .contender-result {
   padding: 2px 10px;
   border: 2px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-sm);
   animation: pop-in 320ms var(--snap);
 }
 
@@ -1104,6 +1155,309 @@ a.tag:hover {
   padding: 20px;
 }
 
+/* ---------- Names, guests ---------- */
+
+.name-form {
+  width: 100%;
+}
+
+.name-form-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.name-form-row .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.link-btn {
+  padding: 0;
+  font: inherit;
+  font-weight: 800;
+  color: var(--ink);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn.btn-pink {
+  background: var(--accent-2);
+  color: #fff;
+}
+
+.btn.btn-pink:hover {
+  background: #ff7ba3;
+}
+
+/* ---------- Thumbtacks ---------- */
+
+.tack-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.tack-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 1px 5px;
+  font: 800 13px var(--font-body);
+  color: var(--ink);
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  transition:
+    transform var(--speed) var(--snap),
+    box-shadow var(--speed) var(--snap);
+}
+
+.tack-btn:hover {
+  background: var(--muted-fill);
+}
+
+.tack-btn:active,
+.tack-btn.is-tacked {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.tack-btn.is-tacked {
+  background: var(--accent);
+}
+
+.tack-btn.is-tacked .tack-icon {
+  animation: wiggle 320ms var(--snap);
+}
+
+.tack-btn.is-big {
+  padding: 4px 12px 4px 8px;
+  font-size: 16px;
+}
+
+.tack-icon {
+  display: block;
+}
+
+.tack-error {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 2;
+  width: max-content;
+  max-width: 200px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--ink);
+}
+
+.week-intro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* ---------- Card badges ---------- */
+
+.setup-card-picture {
+  position: relative;
+}
+
+.rank-badge,
+.pick-badge {
+  position: absolute;
+  top: 8px;
+  padding: 2px 8px;
+  font: 700 14px var(--font-heading);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.rank-badge {
+  left: 8px;
+  background: var(--accent);
+}
+
+.pick-badge {
+  right: 8px;
+  background: var(--accent-2);
+  color: #fff;
+}
+
+.setup-card.is-featured {
+  box-shadow: 6px 6px 0 var(--accent-2);
+}
+
+.made-for {
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* ---------- Challenge rooms ---------- */
+
+.room-page {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.room-top {
+  height: min(620px, calc(100vh - 80px));
+}
+
+.room-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 20px 24px;
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-list h2 {
+  font-size: 22px;
+}
+
+.room-code {
+  margin: 0;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.room-code strong {
+  padding: 1px 6px;
+  font-family: var(--font-heading);
+  letter-spacing: 2px;
+  color: var(--ink);
+  background: var(--accent);
+  border: 2px solid var(--ink);
+}
+
+.room-code-input {
+  width: 130px;
+  font-family: var(--font-heading);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.share-link {
+  display: flex;
+  gap: 8px;
+}
+
+.share-link .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.inspector-actions a.btn {
+  text-decoration: none;
+}
+
+.setup-info a.btn,
+.board-empty a.btn {
+  text-decoration: none;
+}
+
+/* Wishlist builder (in the challenge dialog). */
+.wishlist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wish {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 10px;
+  font-weight: 700;
+  background: var(--muted-fill);
+  border: 2px solid var(--ink);
+}
+
+.wish-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.wish-qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Wishlist checklist (while designing). */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  font: 700 14px var(--font-body);
+  text-align: left;
+  color: var(--ink);
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+}
+
+button.check-btn:hover {
+  background: var(--muted-fill);
+}
+
+.check-btn.is-idea {
+  cursor: default;
+  box-shadow: none;
+  border-style: dashed;
+}
+
+.check-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  font-weight: 900;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+}
+
+.checklist .is-done .check-btn {
+  background: #d9f7e9;
+}
+
+.checklist .is-done .check-box {
+  background: var(--accent-3);
+}
+
 /* ---------- Phones: stack the planner (it can be basic here) ---------- */
 
 @media (max-width: 800px) {
@@ -1157,4 +1511,17 @@ a.tag:hover {
   .auth-user {
     display: none;
   }
+}
+
+/* The room-code box in the Rooms header stays compact. */
+.board-head .name-form-row {
+  width: auto;
+}
+
+.board-head .name-form-row .input {
+  flex: none;
+}
+
+.board-head .room-code-input {
+  width: 140px;
 }
