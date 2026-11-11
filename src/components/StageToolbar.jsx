@@ -9,8 +9,21 @@ const MODES = [
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
-// The bar across the top of the 3D view: placement mode, camera views, undo/redo, publish.
-export default function StageToolbar({ mode, onModeChange, onView, canUndo, canRedo, onUndo, onRedo, canPublish, onPublish }) {
+// The bar across the top of the 3D view: placement mode, camera views,
+// undo/redo, publish, and (in your own planner) starting a challenge.
+export default function StageToolbar({
+  mode,
+  onModeChange,
+  onView,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+  canPublish,
+  onPublish,
+  publishLabel = 'Publish',
+  onChallenge = null,
+}) {
   return (
     <div className="stage-toolbar">
       <div className="placement-mode" title="Snap: items lock into suggested spots. Free: drag anywhere, precisely.">
@@ -39,6 +52,16 @@ export default function StageToolbar({ mode, onModeChange, onView, canUndo, canR
         >
           Redo <Icon name="redo" size={14} />
         </button>
+        {onChallenge && (
+          <button
+            type="button"
+            className="btn btn-small btn-pink"
+            onClick={onChallenge}
+            title="Send friends a link to design something on top of your room"
+          >
+            Challenge
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-small btn-accent"
@@ -46,7 +69,7 @@ export default function StageToolbar({ mode, onModeChange, onView, canUndo, canR
           disabled={!canPublish}
           title={canPublish ? 'Share this setup on the board' : 'Add some items first'}
         >
-          Publish
+          {publishLabel}
         </button>
       </div>
     </div>

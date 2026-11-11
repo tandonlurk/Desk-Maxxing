@@ -12,6 +12,9 @@ export default function Header() {
         <NavLink to="/" end className="nav-link">
           Planner
         </NavLink>
+        <NavLink to="/rooms" className="nav-link">
+          Rooms
+        </NavLink>
         <NavLink to="/board" className="nav-link">
           Board
         </NavLink>

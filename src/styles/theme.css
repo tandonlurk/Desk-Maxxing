@@ -4,41 +4,37 @@
 */
 :root {
   /* Colors */
-  --bg: #bfe6ff;            /* baby blue, used everywhere incl. behind the 3D scene */
-  --bg-dots: #cdeeff;       /* the soft polka dots on the background */
-  --bg-deep: #a3d6f5;
-  --panel: #fffaf2;         /* warm cream white */
-  --ink: #1b2541;           /* dark navy: outlines, text, shadows */
+  --bg: #9fdcff;            /* bright sky blue, used everywhere incl. behind the 3D scene */
+  --bg-dots: #b2e4ff;       /* the lighter squares of the checkered background */
+  --bg-deep: #7cc6f2;
+  --panel: #fffdf6;         /* chalky white */
+  --ink: #1d1f33;           /* near-black navy: outlines, text, shadows */
   --ink-soft: #5d6585;
-  --accent: #ffc93c;        /* sunny yellow */
-  --accent-2: #ff6b9a;      /* hot pink */
-  --accent-3: #4fd1a5;      /* mint (success) */
+  --accent: #ffd23f;        /* sunny yellow */
+  --accent-2: #ff5f8f;      /* hot pink */
+  --accent-3: #3ed598;      /* mint (success) */
   --accent-warm: #ffb27a;   /* peach */
   --danger: #ff5a5a;
-  --muted-fill: #fff0dc;    /* warm hover / note backgrounds */
-  --divider: #f1dcbc;
+  --muted-fill: #fff3cf;    /* warm hover / note backgrounds */
+  --divider: #e8dcc0;
 
   /* 3D scene colors (read by src/scene/cssVar.js) */
-  --floor-plank-1: #f6ead8; /* whitewashed wood planks */
-  --floor-plank-2: #f1e2cc;
-  --floor-plank-3: #f9efe1;
-  --floor-gap: #d9c3a3;
-  --floor-side: #c9996a;
+  --floor-side: #8a5a3c;    /* the chunky diorama block under the room */
   --sun: #fff0d9;           /* warm sunlight */
 
   /* Borders and corners */
   --border-w: 3px;
   --border: var(--border-w) solid var(--ink);
-  --radius: 8px;
-  --radius-sm: 5px;
+  --radius: 2px;             /* blocky: corners are barely softened */
+  --radius-sm: 0;
 
   /* Hard offset shadows, no blur */
-  --shadow: 4px 4px 0 var(--ink);
-  --shadow-sm: 2px 2px 0 var(--ink);
-  --shadow-lg: 6px 6px 0 var(--ink);
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-lg: 8px 8px 0 var(--ink);
 
   /* Fonts */
-  --font-heading: 'Lilita One', 'Arial Black', system-ui, sans-serif;
+  --font-heading: 'Silkscreen', 'Lilita One', 'Arial Black', system-ui, sans-serif;
   --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Motion */

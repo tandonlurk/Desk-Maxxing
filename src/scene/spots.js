@@ -79,10 +79,11 @@ const degrees = (radians) => (radians * 180) / Math.PI
 // { id, label, position: { x, z }, rotation, free }. `free` is false when the
 // item wouldn't fit there (something's in the way). `ignoreId` is the item
 // being moved, so it doesn't block itself.
-export function getSuggestedSpots(desk, items, asset, ignoreId = null) {
+export function getSuggestedSpots(desk, items, asset, ignoreId = null, room = null) {
+  if (asset.placement === 'wall') return [] // wall pieces go on walls, not in desk spots
   const others = items.filter((item) => item.id !== ignoreId)
-  const fits = makePlacementChecker(desk, others)
-  const onDesk = makePlacementChecker(desk, []) // ignores other items
+  const fits = makePlacementChecker(desk, others, room)
+  const onDesk = makePlacementChecker(desk, [], room) // ignores other items
   const { width: w, depth: d } = asset.size
 
   // The person's frame of reference: forward (toward the desk) and right.
@@ -161,7 +162,7 @@ export function getSuggestedSpots(desk, items, asset, ignoreId = null) {
 
     // Skip spots that land on top of an earlier one (happens on small desks).
     if (spots.some((s) => Math.hypot(s.position.x - position.x, s.position.z - position.z) < 5)) continue
-    const fitsOnSurface = asset.placement === 'floor' || onDesk(candidate(position, rotation))
+    const fitsOnSurface = onDesk(candidate(position, rotation))
     if (!fitsOnSurface) continue
 
     spots.push({

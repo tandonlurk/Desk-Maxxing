@@ -1,17 +1,19 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Desk from './Desk.jsx'
-import Floor from './Floor.jsx'
+import Room, { RoomGroup } from './Room.jsx'
 import CameraRig from './CameraRig.jsx'
 import ItemsLayer from './ItemsLayer.jsx'
 import { Lights } from './PlannerScene.jsx'
 import { DEFAULT_FOV } from './cameraViews.js'
+import { posedWallItems } from './wallPlacement.js'
 
-const DEFAULT_VIEW = { name: 'default', id: 0, instant: true }
+const DEFAULT_VIEW = { name: 'room', id: 0, instant: true }
 const NO_IDS = []
 
 // A look-but-don't-touch 3D view of a setup: orbit and zoom, no editing.
-export default function SetupViewer({ desk, items }) {
+export default function SetupViewer({ setup }) {
+  const { room, desk, items, wallItems } = setup
   return (
     <Canvas
       shadows="percentage"
@@ -21,9 +23,11 @@ export default function SetupViewer({ desk, items }) {
       gl={{ alpha: true, antialias: true }}
     >
       <Lights />
-      <Floor />
+      <RoomGroup room={room}>
+        <Room room={room} />
+      </RoomGroup>
       <Desk desk={desk} />
-      <ItemsLayer desk={desk} items={items} selectedId={null} misplacedIds={NO_IDS} />
+      <ItemsLayer desk={desk} items={[...items, ...posedWallItems(room, wallItems)]} selectedId={null} misplacedIds={NO_IDS} />
       <OrbitControls
         makeDefault
         enableDamping
@@ -32,7 +36,7 @@ export default function SetupViewer({ desk, items }) {
         maxDistance={1200}
         maxPolarAngle={Math.PI / 2 - 0.04}
       />
-      <CameraRig desk={desk} request={DEFAULT_VIEW} />
+      <CameraRig desk={desk} room={room} request={DEFAULT_VIEW} />
     </Canvas>
   )
 }

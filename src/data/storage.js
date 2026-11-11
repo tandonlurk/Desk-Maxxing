@@ -5,7 +5,7 @@
 // in .env.local (see supabase/README.md). Without them the planner still works;
 // only the board, publishing, and signing in are unavailable.
 import { createClient } from '@supabase/supabase-js'
-import { DEFAULT_DESK, normalizeDesk } from '../assets/deskOptions.js'
+import { normalizeSetup } from '../assets/setupShape.js'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -14,11 +14,15 @@ const supabase = url && key ? createClient(url, key) : null
 export const BACKEND_READY = Boolean(supabase)
 
 const DRAFT_KEY = 'desk-maxxing:draft'
+const ROOM_DRAFT_KEY = (code) => `desk-maxxing:draft:room:${code}`
 const VOTER_KEY = 'desk-maxxing:voter'
 const THUMBNAILS = 'thumbnails'
 
 // Card fields for the board (everything but the full setup).
-const CARD_FIELDS = 'id, owner_id, title, description, tags, thumbnail_path, points, wins, losses, created_at, username, avatar_url'
+const CARD_FIELDS =
+  'id, owner_id, title, description, tags, thumbnail_path, points, wins, losses, created_at, username, avatar_url, tacks, room_id, tacked_by_me'
+const ROOM_FIELDS =
+  'id, code, owner_id, title, brief, wishlist, thumbnail_path, winner_id, created_at, username, avatar_url, entry_count'
 
 function requireBackend() {
   if (!supabase) throw new Error('The board isn’t set up yet (see supabase/README.md).')
@@ -48,30 +52,23 @@ function writeLocal(name, value) {
   }
 }
 
-// A setup ({ desk, items }) from somewhere we don't control: fill in missing
-// desk fields and drop anything that isn't an item.
+// A setup ({ room, desk, items, wallItems }) from somewhere we don't control:
+// fill in anything missing and drop anything that isn't an item.
 export function readSetup(raw) {
-  const desk = normalizeDesk({ ...DEFAULT_DESK, ...(raw?.desk || {}) })
-  const items = (Array.isArray(raw?.items) ? raw.items : []).filter(
-    (item) =>
-      item &&
-      typeof item.id === 'string' &&
-      typeof item.assetId === 'string' &&
-      Number.isFinite(item.position?.x) &&
-      Number.isFinite(item.position?.z),
-  )
-  return { desk, items }
+  return normalizeSetup(raw)
 }
 
 // ---------- Local draft ----------
 
-export function loadDraft() {
-  const draft = readLocal(DRAFT_KEY)
+// Your own planner draft, or (with a room code) your entry in progress for
+// that room.
+export function loadDraft(roomCode = null) {
+  const draft = readLocal(roomCode ? ROOM_DRAFT_KEY(roomCode) : DRAFT_KEY)
   return draft ? readSetup(draft) : null
 }
 
-export function saveDraft(setup) {
-  writeLocal(DRAFT_KEY, setup)
+export function saveDraft(setup, roomCode = null) {
+  writeLocal(roomCode ? ROOM_DRAFT_KEY(roomCode) : DRAFT_KEY, setup)
 }
 
 // ---------- Signing in ----------
@@ -94,7 +91,33 @@ function toUser(user) {
     id: user.id,
     username: meta.user_name || meta.preferred_username || meta.name || 'desk-maxxer',
     avatarUrl: meta.avatar_url || null,
+    // Guests signed in with just a nickname (no GitHub account linked yet).
+    isGuest: Boolean(user.is_anonymous),
   }
+}
+
+// Play as a guest: just a nickname, no account. (Supabase anonymous
+// sign-in; the nickname becomes the profile's username.)
+export async function signInAsGuest(nickname) {
+  requireBackend()
+  const name = nickname.trim()
+  if (!name) throw new Error('Pick a name first.')
+  unwrap(await supabase.auth.signInAnonymously({ options: { data: { user_name: name } } }))
+}
+
+// Change your name (shown on everything you've published).
+export async function rename(nickname) {
+  requireBackend()
+  const name = unwrap(await supabase.rpc('set_username', { name: nickname }))
+  unwrap(await supabase.auth.updateUser({ data: { user_name: name } }))
+  return name
+}
+
+// Guests can keep their account (and everything they made) by linking
+// GitHub. Goes to GitHub and comes back here.
+export async function linkGitHub() {
+  requireBackend()
+  unwrap(await supabase.auth.linkIdentity({ provider: 'github', options: { redirectTo: window.location.href } }))
 }
 
 // Goes to GitHub and comes back to the current page.
@@ -129,6 +152,9 @@ function toCard(row) {
     createdAt: row.created_at,
     username: row.username,
     avatarUrl: row.avatar_url,
+    tacks: row.tacks ?? 0,
+    tackedByMe: Boolean(row.tacked_by_me),
+    roomId: row.room_id ?? null,
     ...(row.setup && { setup: readSetup(row.setup) }),
   }
 }
@@ -139,7 +165,8 @@ export async function listSetups({ tags = [], sort = 'top', offset = 0, limit = 
   requireBackend()
   let query = supabase.from('setup_cards').select(CARD_FIELDS)
   if (tags.length > 0) query = query.overlaps('tags', tags)
-  query = sort === 'new' ? query.order('created_at', { ascending: false }) : query.order('points', { ascending: false })
+  const orderBy = { new: 'created_at', tacks: 'tacks' }[sort] || 'points'
+  query = query.order(orderBy, { ascending: false })
   const rows = unwrap(await query.order('id').range(offset, offset + limit - 1))
   return rows.map(toCard)
 }
@@ -151,29 +178,192 @@ export async function getSetup(id) {
   return row ? toCard(row) : null
 }
 
-// Uploads the thumbnail, then saves the setup. Returns the new setup's id.
-export async function publishSetup({ title, description, tags, setup, thumbnail }) {
-  requireBackend()
+async function currentUserId(message = 'Sign in to publish.') {
   const { data } = await supabase.auth.getUser()
-  if (!data.user) throw new Error('Sign in to publish.')
+  if (!data.user) throw new Error(message)
+  return data.user.id
+}
 
+// Uploads a picture into your own folder. Returns its path.
+async function uploadThumbnail(userId, thumbnail) {
   const extension = thumbnail.type.split('/')[1] || 'png'
-  const path = `${data.user.id}/${window.crypto.randomUUID()}.${extension}`
+  const path = `${userId}/${window.crypto.randomUUID()}.${extension}`
   unwrap(await supabase.storage.from(THUMBNAILS).upload(path, thumbnail, { contentType: thumbnail.type }))
+  return path
+}
 
-  const result = await supabase
-    .from('setups')
-    .insert({ title, description, tags, setup, thumbnail_path: path })
-    .select('id')
-    .single()
-  if (result.error) await supabase.storage.from(THUMBNAILS).remove([path])
-  return unwrap(result).id
+// Uploads the thumbnail, then saves the setup. Returns the new setup's id.
+// With a `roomId`, it's your entry for that room: submitting again updates
+// your entry instead of making a second one.
+export async function publishSetup({ title, description, tags, setup, thumbnail, roomId = null }) {
+  requireBackend()
+  const userId = await currentUserId()
+  const path = await uploadThumbnail(userId, thumbnail)
+  const fields = { title, description, tags, setup, thumbnail_path: path }
+
+  const existing = roomId
+    ? unwrap(
+        await supabase.from('setups').select('id, thumbnail_path').eq('room_id', roomId).eq('owner_id', userId).maybeSingle(),
+      )
+    : null
+
+  const result = existing
+    ? await supabase.from('setups').update(fields).eq('id', existing.id).select('id').single()
+    : await supabase
+        .from('setups')
+        .insert({ ...fields, ...(roomId && { room_id: roomId }) })
+        .select('id')
+        .single()
+  if (result.error) {
+    await supabase.storage.from(THUMBNAILS).remove([path])
+    unwrap(result)
+  }
+  if (existing?.thumbnail_path) await supabase.storage.from(THUMBNAILS).remove([existing.thumbnail_path])
+  return result.data.id
 }
 
 export async function deleteSetup(card) {
   requireBackend()
   unwrap(await supabase.from('setups').delete().eq('id', card.id))
   if (card.thumbnailPath) await supabase.storage.from(THUMBNAILS).remove([card.thumbnailPath])
+}
+
+// ---------- Thumbtacks ----------
+
+// Tack a setup, or take your tack back. Returns { tacked, tacks }.
+export async function toggleTack(setupId) {
+  requireBackend()
+  return unwrap(await supabase.rpc('toggle_tack', { target: setupId }))
+}
+
+// This week's most-tacked setups, each with `weekTacks`.
+export async function topOfWeek(limit = 24) {
+  requireBackend()
+  const ranking = unwrap(await supabase.rpc('top_of_week', { lim: limit }))
+  if (ranking.length === 0) return []
+  const rows = unwrap(
+    await supabase
+      .from('setup_cards')
+      .select(CARD_FIELDS)
+      .in(
+        'id',
+        ranking.map((entry) => entry.setup_id),
+      ),
+  )
+  const byId = new Map(rows.map((row) => [row.id, row]))
+  return ranking
+    .filter((entry) => byId.has(entry.setup_id))
+    .map((entry) => ({ ...toCard(byId.get(entry.setup_id)), weekTacks: entry.week_tacks }))
+}
+
+// ---------- Challenge rooms ----------
+
+function toRoom(row) {
+  return {
+    id: row.id,
+    code: row.code,
+    ownerId: row.owner_id,
+    title: row.title,
+    brief: row.brief,
+    wishlist: readWishlist(row.wishlist),
+    thumbnailUrl: thumbnailUrl(row.thumbnail_path),
+    thumbnailPath: row.thumbnail_path,
+    winnerId: row.winner_id,
+    createdAt: row.created_at,
+    username: row.username,
+    avatarUrl: row.avatar_url,
+    entryCount: row.entry_count ?? 0,
+    ...(row.base && { base: readSetup(row.base) }),
+  }
+}
+
+// [{ assetId, label, qty }]: assetId is a library item, or null for a
+// free-text wish like "somewhere for my guitar".
+export function readWishlist(raw) {
+  return (Array.isArray(raw) ? raw : [])
+    .filter((wish) => wish && typeof wish.label === 'string' && wish.label.trim())
+    .map((wish) => ({
+      assetId: typeof wish.assetId === 'string' ? wish.assetId : null,
+      label: wish.label.trim().slice(0, 60),
+      qty: Math.min(9, Math.max(1, Math.round(Number(wish.qty) || 1))),
+    }))
+    .slice(0, 30)
+}
+
+// Start a challenge: your current setup becomes the base. Returns the room's code.
+export async function createRoom({ title, brief, wishlist, base, thumbnail }) {
+  requireBackend()
+  const userId = await currentUserId('Pick a name (or sign in) to start a challenge.')
+  const path = await uploadThumbnail(userId, thumbnail)
+  const result = await supabase
+    .from('rooms')
+    .insert({ title, brief, wishlist: readWishlist(wishlist), base, thumbnail_path: path })
+    .select('code')
+    .single()
+  if (result.error) await supabase.storage.from(THUMBNAILS).remove([path])
+  return unwrap(result).code
+}
+
+// One room, including its base. Null if there's no room with that code.
+export async function getRoom(code) {
+  requireBackend()
+  const row = unwrap(
+    await supabase.from('room_cards').select(`${ROOM_FIELDS}, base`).eq('code', code.toLowerCase()).maybeSingle(),
+  )
+  return row ? toRoom(row) : null
+}
+
+// Just a room's code and title, for "made for …" links.
+export async function getRoomLink(roomId) {
+  requireBackend()
+  return unwrap(await supabase.from('rooms').select('code, title').eq('id', roomId).maybeSingle())
+}
+
+// Remember that you're in this room (shows up under My rooms).
+export async function joinRoom(roomId) {
+  requireBackend()
+  unwrap(await supabase.from('room_members').upsert({ room_id: roomId }, { onConflict: 'room_id,user_id', ignoreDuplicates: true }))
+}
+
+// The entries in a room, most tacked first.
+export async function listEntries(roomId) {
+  requireBackend()
+  const rows = unwrap(
+    await supabase
+      .from('setup_cards')
+      .select(CARD_FIELDS)
+      .eq('room_id', roomId)
+      .order('tacks', { ascending: false })
+      .order('created_at'),
+  )
+  return rows.map(toCard)
+}
+
+// The creator picks the winning entry (or null to un-pick).
+export async function crownEntry(roomId, setupId) {
+  requireBackend()
+  unwrap(await supabase.from('rooms').update({ winner_id: setupId }).eq('id', roomId))
+}
+
+// Rooms you made, then rooms you joined, newest first.
+export async function listMyRooms() {
+  requireBackend()
+  const userId = await currentUserId('Pick a name (or sign in) to see your rooms.')
+  const joined = unwrap(await supabase.from('room_members').select('room_id').eq('user_id', userId))
+  const ids = joined.map((row) => row.room_id)
+  const [mine, others] = await Promise.all([
+    supabase.from('room_cards').select(ROOM_FIELDS).eq('owner_id', userId).order('created_at', { ascending: false }),
+    ids.length > 0
+      ? supabase.from('room_cards').select(ROOM_FIELDS).in('id', ids).neq('owner_id', userId).order('created_at', { ascending: false })
+      : { data: [], error: null },
+  ])
+  return { created: unwrap(mine).map(toRoom), joined: unwrap(others).map(toRoom) }
+}
+
+export async function deleteRoom(room) {
+  requireBackend()
+  unwrap(await supabase.from('rooms').delete().eq('id', room.id))
+  if (room.thumbnailPath) await supabase.storage.from(THUMBNAILS).remove([room.thumbnailPath])
 }
 
 // ---------- 1v1 ----------

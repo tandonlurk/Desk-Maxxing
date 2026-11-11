@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import Desk from './Desk.jsx'
-import Floor from './Floor.jsx'
+import Room, { RoomGroup } from './Room.jsx'
 import CameraRig from './CameraRig.jsx'
 import ItemsLayer from './ItemsLayer.jsx'
 import SpotMarkers from './SpotMarkers.jsx'
@@ -12,12 +12,17 @@ import { DEFAULT_FOV } from './cameraViews.js'
 import { getAsset } from '../assets/library.js'
 import { surfaceHeight } from './placement.js'
 import { cssVar } from './cssVar.js'
+import { posedWallItems } from './wallPlacement.js'
 
 // The 3D view. The canvas is transparent so the page's baby-blue background
 // shows through behind the scene.
 export default function PlannerScene({
+  room,
   desk,
   items,
+  wallItems,
+  onPaint,
+  lockedIds,
   view,
   units,
   mode,
@@ -45,12 +50,15 @@ export default function PlannerScene({
       onPointerMissed={(event) => event.button === 0 && onDeselect()}
     >
       <Lights />
-      <Floor />
+      <RoomGroup room={room}>
+        <Room room={room} onPaint={onPaint} />
+      </RoomGroup>
       <Desk desk={desk} />
 
       <ItemsLayer
         desk={desk}
-        items={items}
+        items={[...items, ...posedWallItems(room, wallItems)]}
+        lockedIds={lockedIds}
         selectedId={selectedId}
         liftedId={dragView?.itemId}
         misplacedIds={misplacedIds}
@@ -77,7 +85,7 @@ export default function PlannerScene({
         maxDistance={1200}
         maxPolarAngle={Math.PI / 2 - 0.04} // don't go below the floor
       />
-      <CameraRig desk={desk} request={view} />
+      <CameraRig desk={desk} room={room} request={view} />
       <PointerPicker picker={picker} />
       <Snapshot snapshot={snapshot} />
     </Canvas>
@@ -136,17 +144,17 @@ export function Lights() {
       <hemisphereLight args={['#fff8ee', '#b5d6ee', 1.55]} />
       {/* The warm "sun" casts the shadows. */}
       <directionalLight
-        position={[160, 360, 220]}
+        position={[160, 420, 220]}
         color={cssVar('--sun')}
         intensity={2.4}
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-320}
-        shadow-camera-right={320}
-        shadow-camera-top={320}
-        shadow-camera-bottom={-320}
+        shadow-camera-left={-480}
+        shadow-camera-right={480}
+        shadow-camera-top={480}
+        shadow-camera-bottom={-480}
         shadow-camera-near={10}
-        shadow-camera-far={1200}
+        shadow-camera-far={1400}
         shadow-bias={-0.0004}
         shadow-normalBias={0.5}
       />

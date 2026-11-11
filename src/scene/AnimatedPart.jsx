@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { BoxGeometry, CylinderGeometry, ExtrudeGeometry, Shape } from 'three'
 import { prefersReducedMotion } from '../motion.js'
+import { pixelTexture } from './pixelTexture.js'
 
 // One shared 1×1×1 geometry per shape. Each part scales it to its real size,
 // which lets the size animate smoothly without rebuilding geometry.
@@ -42,8 +43,9 @@ function applyToMesh(mesh, v) {
 }
 
 // A box/cylinder/wedge that springs to its new position, size, and rotation
-// whenever they change, and pops in when it first appears.
-export default function AnimatedPart({ shape = 'box', position, size, rotation = [0, 0, 0], color }) {
+// whenever they change, and pops in when it first appears. `pattern` is an
+// optional pixel texture (see pixelTexture.js) tinted by `color`.
+export default function AnimatedPart({ shape = 'box', position, size, rotation = [0, 0, 0], color, pattern }) {
   const meshRef = useRef()
   const target = toArray(position, size, rotation)
 
@@ -105,7 +107,7 @@ export default function AnimatedPart({ shape = 'box', position, size, rotation =
 
   return (
     <mesh ref={meshRef} geometry={GEOMETRIES[shape]} castShadow receiveShadow>
-      <meshStandardMaterial color={color} roughness={0.85} flatShading />
+      <meshStandardMaterial color={color} map={pattern ? pixelTexture(pattern) : null} roughness={0.85} flatShading />
     </mesh>
   )
 }

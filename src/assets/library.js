@@ -3,7 +3,7 @@
 // Item definitions live in src/assets/registry.js (format: see AGENTS.md).
 // This file reads them and fills in sensible defaults, so the planner can rely
 // on every asset having:
-//   id, name, category, placement ('desk' | 'floor'),
+//   id, name, category, placement ('desk' | 'floor' | 'wall'),
 //   size: { width, depth, height } (cm), colorOptions: [{ name, value }],
 //   flat (true for thin things like mats and rugs, which other items can sit on)
 // and optionally Model: a React component that draws the item.
@@ -43,11 +43,12 @@ function normalizeAsset(asset) {
   return {
     ...asset,
     category: asset.category || 'Other',
-    placement: asset.placement === 'floor' ? 'floor' : 'desk',
+    placement: ['floor', 'wall'].includes(asset.placement) ? asset.placement : 'desk',
     size,
     colorOptions: readColors(asset.colorOptions),
     // Thin things (mats, rugs) don't block other items from sitting on them.
-    flat: asset.flat ?? size.height <= 1.5,
+    // (Wall pieces are thin the other way, and do block each other.)
+    flat: asset.flat ?? (asset.placement !== 'wall' && size.height <= 1.5),
   }
 }
 

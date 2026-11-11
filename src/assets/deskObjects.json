@@ -832,6 +832,454 @@
       "modelPath": "models/calculator.glb",
       "modelingNotes": "Angled display and button grid.",
       "baseColor": "#292e3d"
+    },
+    {
+      "id": "wall-hook",
+      "name": "Wall hook",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 4,
+        "height": 8,
+        "depth": 5
+      },
+      "placement": "wall",
+      "modelPath": "models/wall-hook.glb",
+      "modelingNotes": "Single metal hook for a bag, keys, or a hoodie.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "hook-rack",
+      "name": "Hook rack",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 40,
+        "height": 12,
+        "depth": 8
+      },
+      "placement": "wall",
+      "modelPath": "models/hook-rack.glb",
+      "modelingNotes": "Wood rail with three hooks.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "floating-shelf",
+      "name": "Floating shelf",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 60,
+        "height": 4,
+        "depth": 20
+      },
+      "placement": "wall",
+      "modelPath": "models/floating-shelf.glb",
+      "modelingNotes": "Plain wood plank with hidden brackets.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "wall-shelf-double",
+      "name": "Two-tier shelf",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 60,
+        "height": 32,
+        "depth": 20
+      },
+      "placement": "wall",
+      "modelPath": "models/wall-shelf-double.glb",
+      "modelingNotes": "Two planks on black brackets.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "pegboard",
+      "name": "Pegboard",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 60,
+        "height": 60,
+        "depth": 3
+      },
+      "placement": "wall",
+      "modelPath": "models/pegboard.glb",
+      "modelingNotes": "Grid of holes for hooks and small bins.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "poster-small",
+      "name": "Poster (small)",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 30,
+        "height": 40,
+        "depth": 1
+      },
+      "placement": "wall",
+      "modelPath": "models/poster-small.glb",
+      "modelingNotes": "Unframed print with blocky art.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "poster-medium",
+      "name": "Poster (medium)",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 45,
+        "height": 60,
+        "depth": 1
+      },
+      "placement": "wall",
+      "modelPath": "models/poster-medium.glb",
+      "modelingNotes": "Unframed print with blocky art.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "poster-large",
+      "name": "Poster (large)",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 60,
+        "height": 90,
+        "depth": 1
+      },
+      "placement": "wall",
+      "modelPath": "models/poster-large.glb",
+      "modelingNotes": "Unframed print with blocky art.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "framed-print",
+      "name": "Framed print",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 40,
+        "height": 50,
+        "depth": 3
+      },
+      "placement": "wall",
+      "modelPath": "models/framed-print.glb",
+      "modelingNotes": "Dark frame, white mat, simple landscape.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "cork-board",
+      "name": "Cork board",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 60,
+        "height": 45,
+        "depth": 2
+      },
+      "placement": "wall",
+      "modelPath": "models/cork-board.glb",
+      "modelingNotes": "Cork panel with pinned notes.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "whiteboard",
+      "name": "Whiteboard",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 90,
+        "height": 60,
+        "depth": 4
+      },
+      "placement": "wall",
+      "modelPath": "models/whiteboard.glb",
+      "modelingNotes": "Whiteboard with marker tray.",
+      "baseColor": "#c8ccd6"
+    },
+    {
+      "id": "wall-clock",
+      "name": "Wall clock",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 30,
+        "height": 30,
+        "depth": 5
+      },
+      "placement": "wall",
+      "modelPath": "models/wall-clock.glb",
+      "modelingNotes": "Round clock face.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "led-strip",
+      "name": "LED strip",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 100,
+        "height": 2,
+        "depth": 1
+      },
+      "placement": "wall",
+      "modelPath": "models/led-strip.glb",
+      "modelingNotes": "Glowing light strip.",
+      "baseColor": "#ff5fd2"
+    },
+    {
+      "id": "string-lights",
+      "name": "String lights",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 150,
+        "height": 20,
+        "depth": 5
+      },
+      "placement": "wall",
+      "modelPath": "models/string-lights.glb",
+      "modelingNotes": "Drooping string of colored bulbs.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "neon-sign",
+      "name": "Neon heart sign",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 50,
+        "height": 30,
+        "depth": 4
+      },
+      "placement": "wall",
+      "modelPath": "models/neon-sign.glb",
+      "modelingNotes": "Pixel heart in neon pink on a dark backer.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "mirror",
+      "name": "Wall mirror",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 40,
+        "height": 100,
+        "depth": 3
+      },
+      "placement": "wall",
+      "modelPath": "models/mirror.glb",
+      "modelingNotes": "Tall mirror with a gold frame.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "headphone-hook",
+      "name": "Headphone hook",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 6,
+        "height": 12,
+        "depth": 10
+      },
+      "placement": "wall",
+      "modelPath": "models/headphone-hook.glb",
+      "modelingNotes": "Wall-mounted headphone hanger.",
+      "baseColor": "#141820"
+    },
+    {
+      "id": "wall-tv",
+      "name": "Wall-mounted TV",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 110,
+        "height": 65,
+        "depth": 6
+      },
+      "placement": "wall",
+      "modelPath": "models/wall-tv.glb",
+      "modelingNotes": "Flat TV on a wall mount.",
+      "baseColor": "#141820"
+    },
+    {
+      "id": "wall-sconce",
+      "name": "Wall lamp",
+      "category": "Wall",
+      "dimensionsCm": {
+        "width": 15,
+        "height": 25,
+        "depth": 20
+      },
+      "placement": "wall",
+      "modelPath": "models/wall-sconce.glb",
+      "modelingNotes": "Small sconce with a round shade.",
+      "baseColor": "#d2ae64"
+    },
+    {
+      "id": "desk-chair",
+      "name": "Desk chair",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 62,
+        "height": 100,
+        "depth": 62
+      },
+      "placement": "floor",
+      "modelPath": "models/desk-chair.glb",
+      "modelingNotes": "Office chair on a five-star base.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "gaming-chair",
+      "name": "Gaming chair",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 68,
+        "height": 130,
+        "depth": 68
+      },
+      "placement": "floor",
+      "modelPath": "models/gaming-chair.glb",
+      "modelingNotes": "High-back chair with side bolsters.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "stool",
+      "name": "Stool",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 35,
+        "height": 45,
+        "depth": 35
+      },
+      "placement": "floor",
+      "modelPath": "models/stool.glb",
+      "modelingNotes": "Round wood seat on four legs.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "rug",
+      "name": "Rug",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 160,
+        "height": 1,
+        "depth": 120
+      },
+      "placement": "floor",
+      "modelPath": "models/rug.glb",
+      "modelingNotes": "Layered rectangle rug.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "trash-bin",
+      "name": "Trash bin",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 25,
+        "height": 35,
+        "depth": 25
+      },
+      "placement": "floor",
+      "modelPath": "models/trash-bin.glb",
+      "modelingNotes": "Round bin with a rim.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "floor-lamp",
+      "name": "Floor lamp",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 35,
+        "height": 160,
+        "depth": 35
+      },
+      "placement": "floor",
+      "modelPath": "models/floor-lamp.glb",
+      "modelingNotes": "Tall lamp with a drum shade.",
+      "baseColor": "#292e3d"
+    },
+    {
+      "id": "bookshelf",
+      "name": "Bookshelf",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 80,
+        "height": 120,
+        "depth": 30
+      },
+      "placement": "floor",
+      "modelPath": "models/bookshelf.glb",
+      "modelingNotes": "Three shelves of books.",
+      "baseColor": "#b98762"
+    },
+    {
+      "id": "mini-fridge",
+      "name": "Mini fridge",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 48,
+        "height": 85,
+        "depth": 50
+      },
+      "placement": "floor",
+      "modelPath": "models/mini-fridge.glb",
+      "modelingNotes": "Dorm fridge with a freezer door.",
+      "baseColor": "#eeeae1"
+    },
+    {
+      "id": "drawer-cart",
+      "name": "Drawer cart",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 35,
+        "height": 65,
+        "depth": 40
+      },
+      "placement": "floor",
+      "modelPath": "models/drawer-cart.glb",
+      "modelingNotes": "Three drawers on wheels.",
+      "baseColor": "#88bea9"
+    },
+    {
+      "id": "laundry-hamper",
+      "name": "Laundry hamper",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 45,
+        "height": 60,
+        "depth": 35
+      },
+      "placement": "floor",
+      "modelPath": "models/laundry-hamper.glb",
+      "modelingNotes": "Woven hamper with a lid.",
+      "baseColor": "#d9c6a5"
+    },
+    {
+      "id": "guitar-stand",
+      "name": "Guitar on stand",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 38,
+        "height": 105,
+        "depth": 30
+      },
+      "placement": "floor",
+      "modelPath": "models/guitar-stand.glb",
+      "modelingNotes": "Acoustic guitar resting on a stand.",
+      "baseColor": "#141820"
+    },
+    {
+      "id": "bean-bag",
+      "name": "Bean bag",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 80,
+        "height": 70,
+        "depth": 80
+      },
+      "placement": "floor",
+      "modelPath": "models/bean-bag.glb",
+      "modelingNotes": "Slouchy bean bag chair.",
+      "baseColor": "#d992aa"
+    },
+    {
+      "id": "twin-xl-bed",
+      "name": "Twin XL bed",
+      "category": "Room & furniture",
+      "dimensionsCm": {
+        "width": 104,
+        "height": 95,
+        "depth": 208
+      },
+      "placement": "floor",
+      "modelPath": "models/twin-xl-bed.glb",
+      "modelingNotes": "Dorm bed with headboard; height includes headboard.",
+      "baseColor": "#b98762"
     }
   ]
 }

@@ -4,27 +4,31 @@ import Segmented from '../components/Segmented.jsx'
 import TagPicker from '../components/TagPicker.jsx'
 import SetupCard from '../components/SetupCard.jsx'
 import Versus from '../components/Versus.jsx'
-import { BACKEND_READY, listSetups } from '../data/storage.js'
+import { TackIcon } from '../components/TackButton.jsx'
+import { BACKEND_READY, listSetups, topOfWeek } from '../data/storage.js'
 
 const MODES = [
   { id: 'browse', name: 'Browse' },
+  { id: 'week', name: 'Top this week' },
   { id: '1v1', name: '1v1' },
 ]
 
 const SORTS = [
-  { id: 'top', name: 'Top' },
+  { id: 'tacks', name: 'Most tacked' },
   { id: 'new', name: 'New' },
+  { id: 'top', name: '1v1 pts' },
 ]
 
 const PAGE_SIZE = 24
 
-// The inspiration board: everyone's published setups, filtered by tags.
-// 1v1 mode shows two at a time to vote on, which is what ranks them.
+// The inspiration board: everyone's published setups, filtered by tags and
+// ranked by thumbtacks. "Top this week" counts only this week's tacks.
+// 1v1 mode shows two at a time to vote on, which earns 1v1 points.
 // Mode, tags, and sort live in the URL so a filtered board can be shared.
 export default function Board() {
   const [params, setParams] = useSearchParams()
-  const mode = params.get('mode') === '1v1' ? '1v1' : 'browse'
-  const sort = params.get('sort') === 'new' ? 'new' : 'top'
+  const mode = MODES.some((m) => m.id === params.get('mode')) ? params.get('mode') : 'browse'
+  const sort = SORTS.some((s) => s.id === params.get('sort')) ? params.get('sort') : 'tacks'
   const tags = (params.get('tags') || '').split(',').filter(Boolean)
 
   function setParam(name, value) {
@@ -49,24 +53,71 @@ export default function Board() {
     <div className="board">
       <div className="board-head">
         <h1>Inspiration board</h1>
-        <Segmented label="Board mode" options={MODES} value={mode} onChange={(id) => setParam('mode', id === '1v1' ? id : null)} />
+        <Segmented label="Board mode" options={MODES} value={mode} onChange={(id) => setParam('mode', id === 'browse' ? null : id)} />
         {mode === 'browse' && (
-          <Segmented label="Sort" options={SORTS} value={sort} onChange={(id) => setParam('sort', id === 'new' ? id : null)} />
+          <Segmented label="Sort" options={SORTS} value={sort} onChange={(id) => setParam('sort', id === 'tacks' ? null : id)} />
         )}
       </div>
 
-      <div className="board-tags">
-        <span className="toolbar-label">{mode === '1v1' ? 'Match me up on' : 'Show'}</span>
-        <TagPicker selected={tags} onChange={(next) => setParam('tags', next.join(','))} label="Filter by tags" />
-        {tags.length > 0 && (
-          <button type="button" className="btn btn-small" onClick={() => setParam('tags', null)}>
-            Clear
-          </button>
-        )}
-      </div>
+      {mode === 'week' ? (
+        <TopOfWeek />
+      ) : (
+        <>
+          <div className="board-tags">
+            <span className="toolbar-label">{mode === '1v1' ? 'Match me up on' : 'Show'}</span>
+            <TagPicker selected={tags} onChange={(next) => setParam('tags', next.join(','))} label="Filter by tags" />
+            {tags.length > 0 && (
+              <button type="button" className="btn btn-small" onClick={() => setParam('tags', null)}>
+                Clear
+              </button>
+            )}
+          </div>
 
-      {mode === '1v1' ? <Versus tags={tags} /> : <Browse tags={tags} sort={sort} />}
+          {mode === '1v1' ? <Versus tags={tags} /> : <Browse tags={tags} sort={sort} />}
+        </>
+      )}
     </div>
+  )
+}
+
+// This week's most-tacked setups, ranked.
+function TopOfWeek() {
+  const [cards, setCards] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let ignore = false
+    topOfWeek(PAGE_SIZE)
+      .then((found) => !ignore && setCards(found))
+      .catch((err) => !ignore && setError(err.message))
+    return () => {
+      ignore = true
+    }
+  }, [])
+
+  if (error) return <p className="inspector-warning">{error}</p>
+  if (!cards) return <p className="hint">Counting tacks…</p>
+  return (
+    <>
+      <p className="week-intro">
+        <TackIcon size={20} /> Tack the setups you love. The most tacked since Monday rise to the top, and it starts over
+        every week.
+      </p>
+      {cards.length === 0 ? (
+        <div className="board-empty panel">
+          <h2>No tacks yet this week</h2>
+          <p>
+            Go <Link to="/board">browse</Link> and tack your favorites.
+          </p>
+        </div>
+      ) : (
+        <div className="masonry">
+          {cards.map((card, index) => (
+            <SetupCard key={card.id} card={card} index={index} rank={index + 1} />
+          ))}
+        </div>
+      )}
+    </>
   )
 }
 

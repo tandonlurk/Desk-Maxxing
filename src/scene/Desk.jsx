@@ -14,6 +14,7 @@ export default function Desk({ desk }) {
           size={part.size}
           rotation={part.rotation}
           color={part.color}
+          pattern={part.pattern}
         />
       ))}
     </group>

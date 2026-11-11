@@ -131,7 +131,7 @@ export function getSeat(desk) {
 
 export function getDeskParts(desk) {
   const material = getMaterial(desk.material)
-  const top = getTopParts(desk).map((part) => ({ ...part, color: material.top }))
+  const top = getTopParts(desk).map((part) => ({ ...part, color: material.top, pattern: 'wood' }))
   const legs = getLegParts(desk).map((part) => ({ ...part, color: material.legs }))
   return [...top, ...legs]
 }

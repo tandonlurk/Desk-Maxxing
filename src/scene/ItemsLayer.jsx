@@ -6,8 +6,9 @@ import { surfaceHeight } from './placement.js'
 const EXIT_TIME = 350 // ms to let a removed item shrink away
 
 // All the items in the scene. Removed items stick around for a moment so
-// they can animate out instead of vanishing.
-export default function ItemsLayer({ desk, items, selectedId, liftedId, misplacedIds, onItemPointerDown }) {
+// they can animate out instead of vanishing. Wall items come in already
+// posed in desk coordinates, with their height as `mountY`.
+export default function ItemsLayer({ desk, items, selectedId, liftedId, misplacedIds, lockedIds, onItemPointerDown }) {
   const [exiting, setExiting] = useState([])
   const previous = useRef(items)
   const timers = useRef([])
@@ -41,12 +42,13 @@ export default function ItemsLayer({ desk, items, selectedId, liftedId, misplace
             key={item.id}
             item={item}
             asset={asset}
-            surfaceY={surfaceHeight(desk, asset)}
+            surfaceY={item.mountY ?? surfaceHeight(desk, asset)}
             selected={!isLeaving && item.id === selectedId}
             lifted={!isLeaving && item.id === liftedId}
             flagged={!isLeaving && misplacedIds.includes(item.id)}
             exiting={isLeaving}
-            onPointerDown={onItemPointerDown}
+            // Locked items (a challenge's base) can't be picked up.
+            onPointerDown={lockedIds?.has(item.id) ? undefined : onItemPointerDown}
           />
         )
       })}

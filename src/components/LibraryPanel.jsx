@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { ASSETS, CATEGORIES, USING_PLACEHOLDERS } from '../assets/library.js'
+import { playSfx } from '../sfx.js'
 import { formatNumber, toDisplay } from '../units.js'
 
 // e.g. "24 × 8 × 18 in" (width × depth × height)
@@ -7,17 +9,40 @@ export function formatSize(size, units) {
   return `${n(size.width)} × ${n(size.depth)} × ${n(size.height)} ${units}`
 }
 
+const PLACEMENT_TAGS = { desk: 'Desk', floor: 'Floor', wall: 'Wall' }
+
 // The item library. Press on a card and drag it into the scene, or just
-// click it to drop it in a good spot.
-export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardAdd }) {
+// click it to drop it in a good spot. Chips at the top narrow it to one
+// category. `highlight` (a Set of asset ids) marks wishlist items.
+export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardAdd, highlight = null }) {
+  const [filter, setFilter] = useState('all')
+  const shown = filter === 'all' ? CATEGORIES : CATEGORIES.filter((category) => category === filter)
+
   return (
     <div className="library">
-      <p className="hint">Click to add, or drag onto your desk.</p>
+      <p className="hint">Click to add, or drag onto your desk, floor, or walls.</p>
+      <div className="chip-row" role="radiogroup" aria-label="Item categories">
+        {['all', ...CATEGORIES].map((category) => (
+          <button
+            key={category}
+            type="button"
+            role="radio"
+            aria-checked={filter === category}
+            className={`chip ${filter === category ? 'is-active' : ''}`}
+            onClick={() => {
+              playSfx('click')
+              setFilter(category)
+            }}
+          >
+            {category === 'all' ? 'All' : category}
+          </button>
+        ))}
+      </div>
       {USING_PLACEHOLDERS && (
         <p className="library-note">These are stand-in blocks while the real item library is being made.</p>
       )}
 
-      {CATEGORIES.map((category) => (
+      {shown.map((category) => (
         <section key={category} className="library-section">
           <h3>{category}</h3>
           <div className="library-grid">
@@ -25,7 +50,7 @@ export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardA
               <button
                 key={asset.id}
                 type="button"
-                className="library-card"
+                className={`library-card ${highlight?.has(asset.id) ? 'is-wanted' : ''}`}
                 style={{ '--item-color': asset.colorOptions[0].value, '--i': index }}
                 onPointerDown={(event) => {
                   if (event.button !== 0) return
@@ -43,7 +68,7 @@ export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardA
                   <span className="library-card-name">{asset.name}</span>
                   <span className="library-card-size">{formatSize(asset.size, units)}</span>
                 </span>
-                <span className="tag">{asset.placement === 'floor' ? 'Floor' : 'Desk'}</span>
+                <span className="tag">{highlight?.has(asset.id) ? '★ Wanted' : PLACEMENT_TAGS[asset.placement]}</span>
               </button>
             ))}
           </div>

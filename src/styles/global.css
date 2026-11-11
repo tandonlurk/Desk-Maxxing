@@ -14,10 +14,10 @@ body,
 }
 
 body {
-  /* Baby blue with soft polka dots, like cozy wallpaper. */
+  /* Sky blue in big checkered squares, like a voxel world's ground. */
   background-color: var(--bg);
-  background-image: radial-gradient(var(--bg-dots) 3px, transparent 3.5px);
-  background-size: 28px 28px;
+  background-image: conic-gradient(var(--bg-dots) 25%, transparent 0 50%, var(--bg-dots) 0 75%, transparent 0);
+  background-size: 64px 64px;
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 15px;
@@ -29,8 +29,8 @@ h1,
 h2,
 h3 {
   font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -87,7 +87,7 @@ h3 {
 }
 
 .btn-accent:hover {
-  background: #ffd766;
+  background: #ffe066;
 }
 
 .btn:disabled:hover {

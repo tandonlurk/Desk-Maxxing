@@ -6,6 +6,8 @@ import { Plane, Raycaster, Vector2, Vector3 } from 'three'
 //   pick(clientX, clientY, height) → the { x, z } point on a flat surface at
 //     that height (desk top or floor) under the pointer, or null if the
 //     pointer isn't over the 3D view.
+//   ray(clientX, clientY) → { origin, direction } of the line from the camera
+//     through the pointer (for hitting walls), or null if not over the view.
 //   viewAxes() → which floor directions are "up" and "right" on screen,
 //     snapped to the nearest axis, so arrow keys move items the way you'd expect.
 export default function PointerPicker({ picker }) {
@@ -19,17 +21,31 @@ export default function PointerPicker({ picker }) {
     const up = new Vector3(0, 1, 0)
     const hit = new Vector3()
 
+    // Aims the raycaster through the pointer. False if it's not over the view.
+    function aim(clientX, clientY) {
+      const rect = gl.domElement.getBoundingClientRect()
+      const inside = clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
+      if (!inside) return false
+      // Screen position → -1..1 "normalized device coordinates".
+      pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1)
+      raycaster.setFromCamera(pointer, camera)
+      return true
+    }
+
     picker.current = {
       pick(clientX, clientY, height) {
-        const rect = gl.domElement.getBoundingClientRect()
-        const inside =
-          clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
-        if (!inside) return null
-        // Screen position → -1..1 "normalized device coordinates".
-        pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1)
-        raycaster.setFromCamera(pointer, camera)
+        if (!aim(clientX, clientY)) return null
         plane.set(up, -height) // the horizontal plane y = height
         return raycaster.ray.intersectPlane(plane, hit) ? { x: hit.x, z: hit.z } : null
+      },
+
+      ray(clientX, clientY) {
+        if (!aim(clientX, clientY)) return null
+        const { origin, direction } = raycaster.ray
+        return {
+          origin: { x: origin.x, y: origin.y, z: origin.z },
+          direction: { x: direction.x, y: direction.y, z: direction.z },
+        }
       },
 
       viewAxes() {

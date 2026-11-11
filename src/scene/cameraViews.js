@@ -1,7 +1,9 @@
 // Where the camera goes for each preset view. Pure math, no React.
 import { getDeskBounds, getSeat } from './deskGeometry.js'
+import { roomToDesk } from './roomGeometry.js'
 
 export const VIEW_PRESETS = [
+  { id: 'room', name: 'Room' },
   { id: 'front', name: 'Front' },
   { id: 'top', name: 'Top' },
   { id: 'side', name: 'Side' },
@@ -14,8 +16,8 @@ export const DEFAULT_FOV = 45
 const SEATED_FOV = 65
 
 // Returns { position: [x,y,z], target: [x,y,z], fov } for a view.
-// aspect is the canvas width / height.
-export function getCameraView(name, desk, aspect) {
+// aspect is the canvas width / height. `room` is only needed for the room view.
+export function getCameraView(name, desk, aspect, room = null) {
   const fov = name === 'seated' ? SEATED_FOV : DEFAULT_FOV
   const b = getDeskBounds(desk)
   const H = desk.height
@@ -29,6 +31,15 @@ export function getCameraView(name, desk, aspect) {
   const vHalf = (fov * Math.PI) / 360
   const hHalf = Math.atan(Math.tan(vHalf) * aspect)
   const fit = (halfW, halfH) => 1.25 * Math.max(halfW / Math.tan(hHalf), halfH / Math.tan(vHalf))
+
+  if (name === 'room' && room) {
+    // The whole room from above its open front, a little to the right.
+    const distance = fit(room.width / 2 + 30, room.height / 2 + 40)
+    const at = (x, z) => roomToDesk(room, { x, z })
+    const eye = at(room.width * 0.18, room.depth / 2 + distance * 0.72)
+    const look = at(0, -room.depth * 0.08)
+    return { position: [eye.x, room.height * 0.5 + distance * 0.62, eye.z], target: [look.x, room.height * 0.3, look.z], fov }
+  }
 
   if (name === 'front') {
     const distance = fit(halfWidth + 20, H / 2 + 30)
