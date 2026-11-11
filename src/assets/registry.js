@@ -19,8 +19,15 @@ const PALETTE = [
   { name: 'Oak', value: '#b98762' },
 ]
 
-// Things on the floor instead of the desk.
+// Things on the floor instead of the desk. (Newer catalog entries say so
+// themselves with placement 'floor' or 'wall'.)
 const FLOOR_ITEMS = new Set(['desktop-tower'])
+
+function placementOf(entry) {
+  if (entry.placement === 'wall') return 'wall'
+  if (entry.placement === 'floor' || FLOOR_ITEMS.has(entry.id)) return 'floor'
+  return 'desk'
+}
 
 // Snap spots for items whose category words would otherwise mislead the
 // keyword guess in src/scene/spots.js (e.g. "Computers & displays" reads as a monitor).
@@ -46,7 +53,7 @@ export const ASSETS = catalog.objects.map((entry) => {
     id: entry.id,
     name: entry.name,
     category: entry.category,
-    placement: FLOOR_ITEMS.has(entry.id) ? 'floor' : 'desk',
+    placement: placementOf(entry),
     size: { width, depth, height },
     colorOptions: colorOptions(entry.baseColor),
     price: null,
