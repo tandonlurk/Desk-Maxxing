@@ -6,6 +6,7 @@
 // only the board, publishing, and signing in are unavailable.
 import { createClient } from '@supabase/supabase-js'
 import { normalizeSetup } from '../assets/setupShape.js'
+import { DEFAULT_RULES, readRules } from '../assets/challengeRules.js'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -15,6 +16,7 @@ export const BACKEND_READY = Boolean(supabase)
 
 const DRAFT_KEY = 'desk-maxxing:draft'
 const ROOM_DRAFT_KEY = (code) => `desk-maxxing:draft:room:${code}`
+const BG_KEY = 'desk-maxxing:bg'
 const VOTER_KEY = 'desk-maxxing:voter'
 const THUMBNAILS = 'thumbnails'
 
@@ -69,6 +71,16 @@ export function loadDraft(roomCode = null) {
 
 export function saveDraft(setup, roomCode = null) {
   writeLocal(roomCode ? ROOM_DRAFT_KEY(roomCode) : DRAFT_KEY, setup)
+}
+
+// The page backdrop the user picked (an id from assets/backgrounds.js).
+export function loadBackground() {
+  const id = readLocal(BG_KEY)
+  return typeof id === 'string' ? id : 'sky'
+}
+
+export function saveBackground(id) {
+  writeLocal(BG_KEY, id)
 }
 
 // ---------- Signing in ----------
@@ -273,6 +285,7 @@ function toRoom(row) {
     username: row.username,
     avatarUrl: row.avatar_url,
     entryCount: row.entry_count ?? 0,
+    rules: readRules(row.rules),
     ...(row.base && { base: readSetup(row.base) }),
   }
 }
@@ -291,13 +304,13 @@ export function readWishlist(raw) {
 }
 
 // Start a challenge: your current setup becomes the base. Returns the room's code.
-export async function createRoom({ title, brief, wishlist, base, thumbnail }) {
+export async function createRoom({ title, brief, wishlist, base, thumbnail, rules = DEFAULT_RULES }) {
   requireBackend()
   const userId = await currentUserId('Pick a name (or sign in) to start a challenge.')
   const path = await uploadThumbnail(userId, thumbnail)
   const result = await supabase
     .from('rooms')
-    .insert({ title, brief, wishlist: readWishlist(wishlist), base, thumbnail_path: path })
+    .insert({ title, brief, wishlist: readWishlist(wishlist), base, thumbnail_path: path, rules: readRules(rules) })
     .select('code')
     .single()
   if (result.error) await supabase.storage.from(THUMBNAILS).remove([path])
@@ -308,7 +321,7 @@ export async function createRoom({ title, brief, wishlist, base, thumbnail }) {
 export async function getRoom(code) {
   requireBackend()
   const row = unwrap(
-    await supabase.from('room_cards').select(`${ROOM_FIELDS}, base`).eq('code', code.toLowerCase()).maybeSingle(),
+    await supabase.from('room_cards').select(`${ROOM_FIELDS}, base, rules`).eq('code', code.toLowerCase()).maybeSingle(),
   )
   return row ? toRoom(row) : null
 }

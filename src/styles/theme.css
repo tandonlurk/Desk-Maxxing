@@ -6,6 +6,7 @@
   /* Colors */
   --bg: #9fdcff;            /* bright sky blue, used everywhere incl. behind the 3D scene */
   --bg-dots: #b2e4ff;       /* the lighter squares of the checkered background */
+  --bg-landing: #a7d8ff;    /* solid baby blue for the landing page */
   --bg-deep: #7cc6f2;
   --panel: #fffdf6;         /* chalky white */
   --ink: #1d1f33;           /* near-black navy: outlines, text, shadows */

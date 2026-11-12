@@ -1,3 +1,4 @@
+import Icon from './Icon.jsx'
 import LengthField from './LengthField.jsx'
 import Segmented from './Segmented.jsx'
 import {
@@ -74,7 +75,6 @@ export default function RoomEditor({
           <LengthField label="Length" {...lengthProps('depth')} />
           <LengthField label="Ceiling" {...lengthProps('height')} />
         </div>
-        <p className="hint">Measure wall to wall. The front stays open so you can see in.</p>
       </section>
 
       <section className="editor-section">
@@ -146,7 +146,22 @@ export function PaintSection({ room, onChange, onPaint, paintTarget, onPaintTarg
   const colors = paintTarget === 'floor' ? FLOOR_COLORS : PAINT_COLORS
   return (
     <section className="editor-section">
-      <h3>Paint</h3>
+      <div className="section-head">
+        <h3>Paint</h3>
+        <button
+          type="button"
+          className={`icon-btn ${bucket ? 'is-active' : ''}`}
+          aria-pressed={Boolean(bucket)}
+          aria-label="Paint bucket"
+          title={bucket ? 'Paint bucket on: click walls in the view' : 'Paint bucket: click walls to paint'}
+          onClick={() => {
+            playSfx('click')
+            onBucket(bucket ? null : current)
+          }}
+        >
+          <Icon name="bucket" size={18} strokeWidth={2.5} />
+        </button>
+      </div>
       <Segmented label="What to paint" options={PAINT_TARGETS} value={paintTarget} onChange={onPaintTarget} />
       <div className="paint-swatches">
         {colors.map((color) => (
@@ -174,17 +189,6 @@ export function PaintSection({ room, onChange, onPaint, paintTarget, onPaintTarg
           onChange={(style) => onChange({ floor: { ...room.floor, style } })}
         />
       )}
-      <button
-        type="button"
-        className={`btn btn-small ${bucket ? 'is-active' : ''}`}
-        aria-pressed={Boolean(bucket)}
-        onClick={() => {
-          playSfx('click')
-          onBucket(bucket ? null : current)
-        }}
-      >
-        {bucket ? 'Paint bucket on: click walls in the view' : 'Paint bucket: click walls to paint'}
-      </button>
     </section>
   )
 }

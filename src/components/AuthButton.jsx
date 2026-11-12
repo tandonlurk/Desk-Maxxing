@@ -82,7 +82,7 @@ function JoinDialog({ onClose }) {
     <div className="modal-backdrop" onPointerDown={(event) => event.target === event.currentTarget && onClose()}>
       <div className="modal panel" role="dialog" aria-labelledby="join-title">
         <div className="inspector-head">
-          <h2 id="join-title">Join Desk Maxxing</h2>
+          <h2 id="join-title">Join the fun</h2>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
             ×
           </button>

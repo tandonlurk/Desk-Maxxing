@@ -85,7 +85,7 @@ export default function PlannerScene({
         maxDistance={1200}
         maxPolarAngle={Math.PI / 2 - 0.04} // don't go below the floor
       />
-      <CameraRig desk={desk} room={room} request={view} />
+      <CameraRig desk={desk} room={room} items={items} request={view} />
       <PointerPicker picker={picker} />
       <Snapshot snapshot={snapshot} />
     </Canvas>

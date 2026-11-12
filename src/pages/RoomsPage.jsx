@@ -64,7 +64,7 @@ export default function RoomsPage() {
       </div>
 
       <p className="hint">
-        Start a challenge from the <Link to="/">planner</Link>: set up your room and desk, hit <strong>Challenge</strong>,
+        Start a challenge from the <Link to="/plan">planner</Link>: set up your room and desk, hit <strong>Challenge</strong>,
         and send the link to friends.
       </p>
 

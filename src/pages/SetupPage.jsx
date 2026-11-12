@@ -54,7 +54,7 @@ export default function SetupPage() {
         <div className="board-empty panel">
           <h2>{card === null ? 'This setup isn’t here anymore' : 'Couldn’t load this setup'}</h2>
           <p>{error || (card === null ? 'It may have been deleted.' : 'The board isn’t connected yet.')}</p>
-          <Link to="/board" className="btn">
+          <Link to="/explore" className="btn">
             Back to the board
           </Link>
         </div>
@@ -79,7 +79,7 @@ export default function SetupPage() {
     try {
       await deleteSetup(card)
       playSfx('delete')
-      navigate('/board')
+      navigate('/explore')
     } catch (err) {
       setError(err.message)
     }
@@ -95,7 +95,7 @@ export default function SetupPage() {
       </section>
 
       <aside className="planner-sidebar panel setup-info">
-        <Link to="/board" className="back-link">
+        <Link to="/explore" className="back-link">
           ← Board
         </Link>
         <h1>{card.title}</h1>
@@ -118,7 +118,7 @@ export default function SetupPage() {
         {card.tags.length > 0 && (
           <div className="setup-card-tags">
             {card.tags.map((tag) => (
-              <Link key={tag} to={`/board?tags=${tag}`} className="tag">
+              <Link key={tag} to={`/explore?tags=${tag}`} className="tag">
                 {tagName(tag)}
               </Link>
             ))}

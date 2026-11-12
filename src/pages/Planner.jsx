@@ -7,6 +7,8 @@ import ChallengeDialog from '../components/ChallengeDialog.jsx'
 import LibraryPanel from '../components/LibraryPanel.jsx'
 import ItemInspector from '../components/ItemInspector.jsx'
 import StageToolbar from '../components/StageToolbar.jsx'
+import BackdropSection from '../components/BackgroundPicker.jsx'
+import Icon from '../components/Icon.jsx'
 import Segmented from '../components/Segmented.jsx'
 import PublishDialog from '../components/PublishDialog.jsx'
 import PlannerScene from '../scene/PlannerScene.jsx'
@@ -15,6 +17,7 @@ import { useItemDrag } from '../hooks/useItemDrag.js'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js'
 import { useMessage } from '../hooks/useMessage.js'
 import { getAsset } from '../assets/library.js'
+import { isAssetAllowed } from '../assets/challengeRules.js'
 import { getMisplacedIds } from '../scene/placement.js'
 import { getMisplacedWallIds, wallRightSign } from '../scene/wallPlacement.js'
 import { SPOT_LABELS } from '../scene/spots.js'
@@ -32,19 +35,17 @@ const SIDEBAR_TABS = [
 const CHALLENGE_TABS = [
   { id: 'brief', name: 'Brief' },
   { id: 'items', name: 'Items' },
-  { id: 'paint', name: 'Paint' },
 ]
 
 const ids = (setup) => new Set([...setup.items, ...setup.wallItems].map((item) => item.id))
 
 // Your entry in progress for a challenge: the creator's base (always as it
-// is in the room, locked) plus what you've added and your paint job.
+// is in the room, locked, paint included) plus what you've added.
 function startingEntry(base, draft) {
   if (!draft) return base
   const baseIds = ids(base)
   return {
     ...base,
-    room: { ...base.room, paint: draft.room.paint, floor: draft.room.floor },
     items: [...base.items, ...draft.items.filter((item) => !baseIds.has(item.id))],
     wallItems: [...base.wallItems, ...draft.wallItems.filter((item) => !baseIds.has(item.id))],
   }
@@ -71,6 +72,7 @@ export default function Planner({ challenge = null }) {
 
   const [units, setUnits] = useState('in')
   const [tab, setTab] = useState(challenge ? 'brief' : 'room')
+  const [menuOpen, setMenuOpen] = useState(true)
   const [mode, setMode] = useState('snap')
   const [selectedId, setSelectedId] = useState(null)
   // Bumping `id` re-triggers a view even if it's the same one clicked twice.
@@ -120,6 +122,17 @@ export default function Planner({ challenge = null }) {
     }
     return counts
   }, [items, wallItems, lockedIds])
+  const rules = challenge?.rules ?? null
+  const atLimit = Boolean(rules?.maxItems && itemCount >= rules.maxItems)
+  const isAllowed = useMemo(
+    () => (challenge ? (asset) => isAssetAllowed(asset, challenge.rules, challenge.wishlist) : null),
+    [challenge],
+  )
+  function limitReached() {
+    if (!atLimit) return false
+    notify(`That's the limit: ${rules.maxItems} items. Remove one to add another.`)
+    return true
+  }
   const wanted = useMemo(
     () => (challenge ? new Set(challenge.wishlist.map((wish) => wish.assetId).filter(Boolean)) : null),
     [challenge],
@@ -138,7 +151,7 @@ export default function Planner({ challenge = null }) {
   }
 
   function duplicateSelected() {
-    if (!selectedId) return
+    if (!selectedId || limitReached()) return
     const copyId = editor.duplicateItem(selectedId)
     if (copyId) {
       playSfx('place')
@@ -159,6 +172,7 @@ export default function Planner({ challenge = null }) {
   }
 
   function addFromKeyboard(assetId) {
+    if (limitReached()) return
     const id = editor.addItem(assetId)
     if (id) {
       playSfx('place')
@@ -239,8 +253,23 @@ export default function Planner({ challenge = null }) {
 
   return (
     <div className="planner">
-      <aside className="planner-sidebar panel">
-        <Segmented label="Sidebar" options={challenge ? CHALLENGE_TABS : SIDEBAR_TABS} value={tab} onChange={setTab} />
+      <aside className={`planner-sidebar panel${menuOpen ? '' : ' is-collapsed'}`}>
+        <div className="sidebar-head">
+          <Segmented label="Sidebar" options={challenge ? CHALLENGE_TABS : SIDEBAR_TABS} value={tab} onChange={setTab} />
+          <button
+            type="button"
+            className="icon-btn sidebar-toggle"
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? 'Collapse menu' : 'Expand menu'}
+            title={menuOpen ? 'Collapse menu' : 'Expand menu'}
+            onClick={() => {
+              playSfx('click')
+              setMenuOpen(!menuOpen)
+            }}
+          >
+            <Icon name={menuOpen ? 'chevron-left' : 'chevron-right'} size={18} strokeWidth={3} />
+          </button>
+        </div>
         {tab === 'brief' ? (
           <>
             <WishlistPanel challenge={challenge} placed={placed} onAdd={addFromKeyboard} />
@@ -248,18 +277,6 @@ export default function Planner({ challenge = null }) {
               Start adding items →
             </button>
           </>
-        ) : tab === 'paint' ? (
-          <div className="desk-editor">
-            <PaintSection
-              room={room}
-              onChange={editor.updateRoom}
-              onPaint={editor.paint}
-              paintTarget={paintTarget}
-              onPaintTarget={setPaintTarget}
-              bucket={bucket}
-              onBucket={setBucket}
-            />
-          </div>
         ) : tab === 'room' ? (
           <>
             <RoomEditor
@@ -288,11 +305,16 @@ export default function Planner({ challenge = null }) {
         ) : (
           <LibraryPanel
             units={units}
-            onCardPointerDown={drag.startNew}
+            onCardPointerDown={(assetId, event) => {
+              if (!limitReached()) drag.startNew(assetId, event)
+            }}
+            isAllowed={isAllowed}
+            limitText={rules?.maxItems ? `${itemCount}/${rules.maxItems} items added` : null}
             onCardKeyboardAdd={addFromKeyboard}
             highlight={wanted}
           />
         )}
+        <BackdropSection />
       </aside>
 
       <section className={stageClass} aria-label="3D desk view">
