@@ -3,13 +3,19 @@ import LengthField from './LengthField.jsx'
 import Segmented from './Segmented.jsx'
 import {
   FLOOR_COLORS,
+  GLASS_COLORS,
+  MAX_WINDOWS,
+  WINDOW_SIZE,
+  getWindowLimits,
   FLOOR_STYLES,
   PAINT_COLORS,
   WALLS,
   WALL_NAMES,
   getRoomLimits,
 } from '../assets/roomOptions.js'
-import { deskBoxInRoom, deskWall, placeDeskAgainst, slideDesk } from '../scene/roomGeometry.js'
+import { deskBoxInRoom, deskGap, deskWall, placeDeskAgainst, setDeskGap, slideDesk } from '../scene/roomGeometry.js'
+import { findWindowSpot, wallLength, wallRightSign } from '../scene/wallPlacement.js'
+import { makeItemId } from '../hooks/useSetupEditor.js'
 import { formatLength } from '../units.js'
 import { playSfx } from '../sfx.js'
 
@@ -59,7 +65,7 @@ export default function RoomEditor({
   const offset = wall === 'back' ? (box.minX + box.maxX) / 2 : (box.minZ + box.maxZ) / 2
   // The slider always reads left → right as you face that wall.
   const sign = wall === 'left' ? -1 : 1
-
+  const gap = deskGap(room, desk)
 
   return (
     <div className="desk-editor">
@@ -124,7 +130,28 @@ export default function RoomEditor({
             />
           </label>
         )}
+        {gap.max > 0 && (
+          <label className="field sit-stand">
+            <span className="field-label">
+              Out from the wall: <strong>{formatLength(gap.gap, units)}</strong>
+            </span>
+            <input
+              className="range"
+              type="range"
+              min={0}
+              max={Math.floor(gap.max)}
+              step={1}
+              value={Math.round(gap.gap)}
+              onChange={(event) => {
+                const value = Number(event.target.value)
+                onChange((r, d) => setDeskGap(r, d, value), { group: 'room-gap' })
+              }}
+            />
+          </label>
+        )}
       </section>
+
+      <WindowsSection room={room} units={units} onChange={onChange} />
 
       <PaintSection
         room={room}
@@ -190,5 +217,137 @@ export function PaintSection({ room, onChange, onPaint, paintTarget, onPaintTarg
         />
       )}
     </section>
+  )
+}
+
+const WALL_OPTIONS = WALLS.map((id) => ({ id, name: WALL_NAMES[id].replace(' wall', '') }))
+
+// Windows: four-pane, wood-framed, with a sill. Each one picks its wall,
+// size, and spot on that wall.
+function WindowsSection({ room, units, onChange }) {
+  const windows = room.windows
+  const canAdd = windows.length < MAX_WINDOWS && WALLS.some((w) => room.walls[w])
+  const setWindows = (next, group = null) => onChange({ windows: next }, { group })
+  const changeWindow = (id, changes, group) =>
+    setWindows(
+      windows.map((w) => (w.id === id ? { ...w, ...changes } : w)),
+      group,
+    )
+
+  function addWindow() {
+    const { width, height, y } = WINDOW_SIZE
+    const spot = findWindowSpot(room, width, height, y)
+    if (!spot) return
+    playSfx('place')
+    setWindows([...windows, { id: makeItemId(), ...spot, width, height, y }])
+  }
+
+  return (
+    <section className="editor-section">
+      <div className="section-head">
+        <h3>Windows</h3>
+        <button type="button" className="btn" onClick={addWindow} disabled={!canAdd}>
+          + Add window
+        </button>
+      </div>
+      {windows.length === 0 && <p className="hint">Optional. Adds a four-pane window with a sill.</p>}
+      {windows.map((w, index) => (
+        <WindowFields
+          key={w.id}
+          index={index}
+          win={w}
+          room={room}
+          units={units}
+          onChange={(changes, group) => changeWindow(w.id, changes, group)}
+          onRemove={() => {
+            playSfx('delete')
+            setWindows(windows.filter((other) => other.id !== w.id))
+          }}
+        />
+      ))}
+    </section>
+  )
+}
+
+function WindowFields({ index, win, room, units, onChange, onRemove }) {
+  const limits = getWindowLimits(room)
+  const length = wallLength(room, win.wall)
+  const sign = wallRightSign(win.wall)
+  const slack = Math.max(0, length - win.width)
+  const fromLeft = length / 2 + sign * win.u - win.width / 2
+  const sizeField = (key, label) => (
+    <LengthField
+      label={label}
+      value={win[key]}
+      units={units}
+      min={limits[key].min}
+      max={key === 'width' ? Math.min(limits.width.max, length) : limits.height.max}
+      onChange={(cm) => onChange({ [key]: cm }, `window-${win.id}-${key}`)}
+    />
+  )
+  return (
+    <div className="sub-fields">
+      <div className="section-head">
+        <strong>Window {index + 1}</strong>
+        <button type="button" className="btn" onClick={onRemove} aria-label={`Remove window ${index + 1}`}>
+          Remove
+        </button>
+      </div>
+      <Segmented
+        label={`Window ${index + 1} wall`}
+        options={WALL_OPTIONS.filter((o) => room.walls[o.id] || o.id === win.wall)}
+        value={win.wall}
+        onChange={(wall) => onChange({ wall, u: 0 })}
+      />
+      {!room.walls[win.wall] && <p className="hint">That wall is hidden, so this window is too.</p>}
+      <div className="field-row">
+        {sizeField('width', 'Width')}
+        {sizeField('height', 'Height')}
+        <LengthField
+          label="Off the floor"
+          value={win.y}
+          units={units}
+          min={0}
+          max={Math.max(0, room.height - win.height)}
+          onChange={(cm) => onChange({ y: cm }, `window-${win.id}-y`)}
+        />
+      </div>
+      {slack > 0 && (
+        <label className="field sit-stand">
+          <span className="field-label">
+            From the wall's left end: <strong>{formatLength(fromLeft, units)}</strong>
+          </span>
+          <input
+            className="range"
+            type="range"
+            min={0}
+            max={Math.floor(slack)}
+            step={1}
+            value={Math.round(fromLeft)}
+            onChange={(event) => {
+              const cm = Number(event.target.value)
+              onChange({ u: sign * (cm + win.width / 2 - length / 2) }, `window-${win.id}-u`)
+            }}
+          />
+        </label>
+      )}
+      <div className="glass-swatches">
+        {GLASS_COLORS.map((color) => (
+          <button
+            key={color.value}
+            type="button"
+            className={`paint-swatch ${win.glass === color.value ? 'is-active' : ''}`}
+            style={{ '--paint': color.value }}
+            title={`${color.name} glass`}
+            aria-label={`${color.name} glass`}
+            aria-pressed={win.glass === color.value}
+            onClick={() => {
+              playSfx('click')
+              onChange({ glass: color.value })
+            }}
+          />
+        ))}
+      </div>
+    </div>
   )
 }

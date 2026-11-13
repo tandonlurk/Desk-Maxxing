@@ -38,6 +38,12 @@ function wallRect(item) {
   return { u0: item.u - width / 2, u1: item.u + width / 2, y0: item.y, y1: item.y + height }
 }
 
+// A window's rectangle, sill included (it sticks out a bit at the sides and below).
+export const SILL = { overhang: 6, height: 4, depth: 10 }
+export function windowRect(w) {
+  return { u0: w.u - w.width / 2 - SILL.overhang, u1: w.u + w.width / 2 + SILL.overhang, y0: w.y - SILL.height, y1: w.y + w.height }
+}
+
 function rectsOverlap(a, b) {
   return a.u0 < b.u1 - TOLERANCE && b.u0 < a.u1 - TOLERANCE && a.y0 < b.y1 - TOLERANCE && b.y0 < a.y1 - TOLERANCE
 }
@@ -51,8 +57,12 @@ export function isOnItsWall(room, item) {
 }
 
 // Returns a function that answers "would this wall item be OK here?".
+// Windows count as obstacles too, so nothing hangs over the glass.
 export function makeWallChecker(room, wallItems) {
-  const obstacles = wallItems.map((item) => ({ id: item.id, wall: item.wall, rect: wallRect(item) }))
+  const obstacles = [
+    ...wallItems.map((item) => ({ id: item.id, wall: item.wall, rect: wallRect(item) })),
+    ...(room.windows || []).map((w) => ({ id: w.id, wall: w.wall, rect: windowRect(w) })),
+  ]
   return function isValid(candidate) {
     if (!isOnItsWall(room, candidate)) return false
     const rect = wallRect(candidate)
@@ -175,4 +185,24 @@ export function wallItemPoseInDesk(room, item) {
   const p = roomToDesk(room, pose)
   const facing = roomDirToDesk(room, { x: Math.sin((pose.rotation * Math.PI) / 180), z: Math.cos((pose.rotation * Math.PI) / 180) })
   return { x: p.x, y: pose.y, z: p.z, rotation: (Math.atan2(facing.x, facing.z) * 180) / Math.PI }
+}
+
+// A spot for a new window: on the wall behind the desk first, then the
+// others, clear of the windows already there. Returns { wall, u } or null.
+export function findWindowSpot(room, width, height, y) {
+  const behind = { 0: 'back', 90: 'left', 270: 'right' }[room.deskAt.rotation]
+  const walls = [behind, ...WALLS.filter((w) => w !== behind)].filter((w) => w && room.walls[w])
+  for (const wall of walls) {
+    const half = wallLength(room, wall) / 2 - width / 2 - SILL.overhang
+    if (half < 0) continue
+    const others = (room.windows || []).filter((w) => w.wall === wall).map(windowRect)
+    // Try the middle, then step outward both ways.
+    for (let step = 0; step <= half; step += 5) {
+      for (const u of step === 0 ? [0] : [step, -step]) {
+        const rect = windowRect({ u, y, width, height })
+        if (!others.some((o) => rectsOverlap(rect, o))) return { wall, u }
+      }
+    }
+  }
+  return null
 }

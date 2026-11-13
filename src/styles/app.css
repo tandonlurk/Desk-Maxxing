@@ -2150,3 +2150,12 @@ button.check-btn:hover {
   box-shadow: var(--shadow-sm);
   transform: translate(-50%, -50%) rotate(-8deg);
 }
+
+.glass-swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.glass-swatches .paint-swatch {
+  width: 32px;
+}
