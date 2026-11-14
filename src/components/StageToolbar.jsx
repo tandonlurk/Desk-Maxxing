@@ -1,6 +1,6 @@
-import Segmented from './Segmented.jsx'
 import ViewButtons from './ViewButtons.jsx'
 import Icon from './Icon.jsx'
+import { playSfx } from '../sfx.js'
 
 const MODES = [
   { id: 'snap', name: 'Snap' },
@@ -9,8 +9,40 @@ const MODES = [
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
-// The bar across the top of the 3D view: placement mode, camera views,
-// undo/redo, publish, and (in your own planner) starting a challenge.
+// A two-way slider with words: the thumb slides between Snap and Free.
+function ModeSlider({ value, onChange }) {
+  const index = MODES.findIndex((m) => m.id === value)
+  return (
+    <div
+      className="mode-slider"
+      role="radiogroup"
+      aria-label="Placement"
+      title="Snap: items lock into suggested spots. Free: drag anywhere, precisely."
+      style={{ '--index': index }}
+    >
+      <span className="mode-thumb" aria-hidden="true" />
+      {MODES.map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          role="radio"
+          aria-checked={m.id === value}
+          className={m.id === value ? 'is-active' : ''}
+          onClick={() => {
+            playSfx('click')
+            onChange(m.id)
+          }}
+        >
+          {m.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// Floating controls over the 3D view. Top left: one compact cluster (undo/redo,
+// camera views, placement). Top right: publish, and the challenge link set apart
+// on its own.
 export default function StageToolbar({
   mode,
   onModeChange,
@@ -26,40 +58,50 @@ export default function StageToolbar({
 }) {
   return (
     <div className="stage-toolbar">
-      <div className="placement-mode" title="Snap: items lock into suggested spots. Free: drag anywhere, precisely.">
-        <span className="toolbar-label">Placement</span>
-        <Segmented label="Placement mode" options={MODES} value={mode} onChange={onModeChange} />
+      <div className="tool-cluster">
+        <div className="tool-pill">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onUndo}
+            disabled={!canUndo}
+            title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
+            aria-label="Undo"
+          >
+            <Icon name="undo" size={18} strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onRedo}
+            disabled={!canRedo}
+            title={isMac ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
+            aria-label="Redo"
+          >
+            <Icon name="redo" size={18} strokeWidth={2.5} />
+          </button>
+        </div>
+        <div className="tool-pill">
+          <ViewButtons onSelect={onView} />
+        </div>
+        <div className="tool-pill">
+          <ModeSlider value={mode} onChange={onModeChange} />
+        </div>
       </div>
 
-      <ViewButtons onSelect={onView} />
-
-      <div className="undo-redo">
-        <button
-          type="button"
-          className="btn btn-small"
-          onClick={onUndo}
-          disabled={!canUndo}
-          title={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}
-        >
-          <Icon name="undo" size={14} /> Undo
-        </button>
-        <button
-          type="button"
-          className="btn btn-small"
-          onClick={onRedo}
-          disabled={!canRedo}
-          title={isMac ? 'Redo (⇧⌘Z)' : 'Redo (Ctrl+Shift+Z)'}
-        >
-          Redo <Icon name="redo" size={14} />
-        </button>
+      <div className="tool-actions">
         {onChallenge && (
           <button
             type="button"
-            className="btn btn-small btn-pink"
+            className="btn btn-pink challenge-cta"
             onClick={onChallenge}
             title="Send friends a link to design something on top of your room"
           >
-            Challenge
+            <Icon name="link" size={20} strokeWidth={2.5} />
+            <span>
+              Challenge link
+              <small>Invite friends to redesign your room</small>
+            </span>
           </button>
         )}
         <button

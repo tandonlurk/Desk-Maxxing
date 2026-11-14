@@ -6,7 +6,7 @@ import { prefersReducedMotion } from '../motion.js'
 
 // Glides the camera to a preset view whenever `request` changes.
 // request = { name: 'front' | 'top' | 'side' | 'seated' | 'default', id, instant }
-export default function CameraRig({ desk, room = null, request }) {
+export default function CameraRig({ desk, room = null, items = [], request }) {
   const camera = useThree((state) => state.camera)
   const size = useThree((state) => state.size)
   const controls = useThree((state) => state.controls)
@@ -17,10 +17,12 @@ export default function CameraRig({ desk, room = null, request }) {
   deskRef.current = desk
   const roomRef = useRef(room)
   roomRef.current = room
+  const itemsRef = useRef(items)
+  itemsRef.current = items
 
   useEffect(() => {
     if (!controls) return
-    const view = getCameraView(request.name, deskRef.current, size.width / size.height, roomRef.current)
+    const view = getCameraView(request.name, deskRef.current, size.width / size.height, roomRef.current, itemsRef.current)
     const position = new Vector3(...view.position)
     const target = new Vector3(...view.target)
 

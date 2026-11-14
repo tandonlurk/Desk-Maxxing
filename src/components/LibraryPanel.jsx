@@ -14,15 +14,18 @@ const PLACEMENT_TAGS = { desk: 'Desk', floor: 'Floor', wall: 'Wall' }
 // The item library. Press on a card and drag it into the scene, or just
 // click it to drop it in a good spot. Chips at the top narrow it to one
 // category. `highlight` (a Set of asset ids) marks wishlist items.
-export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardAdd, highlight = null }) {
+export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardAdd, highlight = null, isAllowed = null, limitText = null }) {
   const [filter, setFilter] = useState('all')
-  const shown = filter === 'all' ? CATEGORIES : CATEGORIES.filter((category) => category === filter)
+  const assets = isAllowed ? ASSETS.filter(isAllowed) : ASSETS
+  const categories = CATEGORIES.filter((category) => assets.some((asset) => asset.category === category))
+  const shown = filter === 'all' ? categories : categories.filter((category) => category === filter)
 
   return (
     <div className="library">
       <p className="hint">Click to add, or drag onto your desk, floor, or walls.</p>
+      {limitText && <p className="rules-note">{limitText}</p>}
       <div className="chip-row" role="radiogroup" aria-label="Item categories">
-        {['all', ...CATEGORIES].map((category) => (
+        {['all', ...categories].map((category) => (
           <button
             key={category}
             type="button"
@@ -46,7 +49,7 @@ export default function LibraryPanel({ units, onCardPointerDown, onCardKeyboardA
         <section key={category} className="library-section">
           <h3>{category}</h3>
           <div className="library-grid">
-            {ASSETS.filter((asset) => asset.category === category).map((asset, index) => (
+            {assets.filter((asset) => asset.category === category).map((asset, index) => (
               <button
                 key={asset.id}
                 type="button"

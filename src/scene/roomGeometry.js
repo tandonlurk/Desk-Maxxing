@@ -115,3 +115,24 @@ export function floorPolygonInDesk(room) {
     return [p.x, p.z]
   })
 }
+
+// How far the desk's back is from the wall behind it, and the most it can
+// be (the desk touching the open front / the opposite wall).
+export function deskGap(room, desk) {
+  const box = deskBoxInRoom(room, desk)
+  const wall = deskWall(room)
+  if (wall === 'left') return { gap: box.minX + room.width / 2, max: room.width - (box.maxX - box.minX) }
+  if (wall === 'right') return { gap: room.width / 2 - box.maxX, max: room.width - (box.maxX - box.minX) }
+  return { gap: box.minZ + room.depth / 2, max: room.depth - (box.maxZ - box.minZ) }
+}
+
+// Pull the desk out from the wall behind it so its back is `gap` cm away.
+export function setDeskGap(room, desk, gap) {
+  const wall = deskWall(room)
+  const delta = gap - deskGap(room, desk).gap
+  const at = { ...room.deskAt }
+  if (wall === 'left') at.x += delta
+  else if (wall === 'right') at.x -= delta
+  else at.z += delta
+  return clampDeskInRoom({ ...room, deskAt: at }, desk)
+}

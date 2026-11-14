@@ -107,7 +107,7 @@ function TopOfWeek() {
         <div className="board-empty panel">
           <h2>No tacks yet this week</h2>
           <p>
-            Go <Link to="/board">browse</Link> and tack your favorites.
+            Go <Link to="/explore">browse</Link> and tack your favorites.
           </p>
         </div>
       ) : (
@@ -168,7 +168,7 @@ function Browse({ tags, sort }) {
       <div className="board-empty panel">
         <h2>{tags.length > 0 ? 'Nothing with those tags yet' : 'No setups yet'}</h2>
         <p>
-          Be the first: build a desk in the <Link to="/">planner</Link> and hit Publish.
+          Be the first: build a desk in the <Link to="/plan">planner</Link> and hit Publish.
         </p>
       </div>
     )

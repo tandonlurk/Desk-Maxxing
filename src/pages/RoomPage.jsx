@@ -63,7 +63,7 @@ export default function RoomPage() {
         <div className="board-empty panel">
           <h2>{room === null ? 'No room with that code' : 'Couldn’t load this room'}</h2>
           <p>{error || (room === null ? 'Double-check the link, or ask for a new one.' : 'The board isn’t connected yet.')}</p>
-          <Link to="/" className="btn">
+          <Link to="/plan" className="btn">
             Go to the planner
           </Link>
         </div>
@@ -95,7 +95,7 @@ export default function RoomPage() {
     try {
       await deleteRoom(room)
       playSfx('delete')
-      navigate('/rooms')
+      navigate('/explore?tab=rooms')
     } catch (err) {
       setError(err.message)
     }
@@ -115,7 +115,7 @@ export default function RoomPage() {
         </section>
 
         <aside className="planner-sidebar panel setup-info">
-          <Link to="/rooms" className="back-link">
+          <Link to="/explore?tab=rooms" className="back-link">
             ← My rooms
           </Link>
           <span className="room-code">

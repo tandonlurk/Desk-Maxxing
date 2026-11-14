@@ -26,7 +26,7 @@ export default function ChallengeDesign() {
         <div className="board-empty panel">
           <h2>{room === null ? 'No room with that code' : 'Couldn’t open this room'}</h2>
           <p>{error || (room === null ? 'Double-check the link.' : 'The board isn’t connected yet.')}</p>
-          <Link to="/" className="btn">
+          <Link to="/plan" className="btn">
             Go to the planner
           </Link>
         </div>

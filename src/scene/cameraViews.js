@@ -1,6 +1,8 @@
 // Where the camera goes for each preset view. Pure math, no React.
 import { getDeskBounds, getSeat } from './deskGeometry.js'
-import { roomToDesk } from './roomGeometry.js'
+import { deskBoxInRoom, deskToRoom, roomToDesk } from './roomGeometry.js'
+import { getFootprint } from './placement.js'
+import { getAsset } from '../assets/library.js'
 
 export const VIEW_PRESETS = [
   { id: 'room', name: 'Room' },
@@ -15,9 +17,34 @@ export const VIEW_PRESETS = [
 export const DEFAULT_FOV = 45
 const SEATED_FOV = 65
 
+const FOCUS_MARGIN = 45
+
+// The floor area to show in the room view, in room coordinates: the desk plus
+// floor items, padded a little and kept inside the walls.
+function contentBox(room, desk, items) {
+  const desked = deskBoxInRoom(room, desk)
+  let { minX, maxX, minZ, maxZ } = desked
+  for (const item of items) {
+    if (getAsset(item.assetId)?.placement !== 'floor') continue
+    for (const [x, z] of getFootprint(item)) {
+      const p = deskToRoom(room, { x, z })
+      minX = Math.min(minX, p.x)
+      maxX = Math.max(maxX, p.x)
+      minZ = Math.min(minZ, p.z)
+      maxZ = Math.max(maxZ, p.z)
+    }
+  }
+  return {
+    minX: Math.max(minX - FOCUS_MARGIN, -room.width / 2),
+    maxX: Math.min(maxX + FOCUS_MARGIN, room.width / 2),
+    minZ: Math.max(minZ - FOCUS_MARGIN, -room.depth / 2),
+    maxZ: Math.min(maxZ + FOCUS_MARGIN, room.depth / 2),
+  }
+}
+
 // Returns { position: [x,y,z], target: [x,y,z], fov } for a view.
 // aspect is the canvas width / height. `room` is only needed for the room view.
-export function getCameraView(name, desk, aspect, room = null) {
+export function getCameraView(name, desk, aspect, room = null, items = []) {
   const fov = name === 'seated' ? SEATED_FOV : DEFAULT_FOV
   const b = getDeskBounds(desk)
   const H = desk.height
@@ -33,12 +60,19 @@ export function getCameraView(name, desk, aspect, room = null) {
   const fit = (halfW, halfH) => 1.25 * Math.max(halfW / Math.tan(hHalf), halfH / Math.tan(vHalf))
 
   if (name === 'room' && room) {
-    // The whole room from above its open front, a little to the right.
-    const distance = fit(room.width / 2 + 30, room.height / 2 + 40)
+    // The desk is the star: frame it plus any big floor items (bed, fridge...)
+    // with a margin of floor and wall around it, instead of the whole room.
+    // With nothing big in the room this zooms right in on the desk.
+    const box = contentBox(room, desk, items)
+    const cx = (box.minX + box.maxX) / 2
+    const cz = (box.minZ + box.maxZ) / 2
+    const halfW = Math.max((box.maxX - box.minX) / 2, (box.maxZ - box.minZ) / 2 * 0.8)
+    const wallH = Math.min(room.height, 200)
+    const distance = fit(halfW + 30, wallH / 2 + 30)
     const at = (x, z) => roomToDesk(room, { x, z })
-    const eye = at(room.width * 0.18, room.depth / 2 + distance * 0.72)
-    const look = at(0, -room.depth * 0.08)
-    return { position: [eye.x, room.height * 0.5 + distance * 0.62, eye.z], target: [look.x, room.height * 0.3, look.z], fov }
+    const eye = at(cx + halfW * 0.35, box.maxZ + distance * 0.72)
+    const look = at(cx, cz)
+    return { position: [eye.x, wallH * 0.5 + distance * 0.62, eye.z], target: [look.x, H * 0.8, look.z], fov }
   }
 
   if (name === 'front') {

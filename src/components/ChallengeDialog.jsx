@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import NameForm from './NameForm.jsx'
 import { ASSETS, CATEGORIES, getAsset } from '../assets/library.js'
+import { DEFAULT_RULES } from '../assets/challengeRules.js'
+import Segmented from './Segmented.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js'
 import { BACKEND_READY, createRoom } from '../data/storage.js'
@@ -14,13 +16,14 @@ const MAX_WISHES = 30
 // link to send them.
 export default function ChallengeDialog({ setup, takePicture, onClose }) {
   const user = useAuth()
+  const navigate = useNavigate()
   const [picture, setPicture] = useState(null) // { blob, url }
   const [title, setTitle] = useState('')
   const [brief, setBrief] = useState('')
   const [wishlist, setWishlist] = useState([]) // [{ assetId, label, qty }]
+  const [rules, setRules] = useState(DEFAULT_RULES)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
-  const [code, setCode] = useState(null) // set once the room exists
 
   // Same as publishing: wait two frames so the scene has redrawn, then take a picture.
   useEffect(() => {
@@ -57,9 +60,11 @@ export default function ChallengeDialog({ setup, takePicture, onClose }) {
         wishlist,
         base: setup,
         thumbnail: picture.blob,
+        rules,
       })
       playSfx('publish')
-      setCode(roomCode)
+      navigate(`/r/${roomCode}/share`)
+      return
     } catch (err) {
       setError(err.message)
     }
@@ -68,9 +73,6 @@ export default function ChallengeDialog({ setup, takePicture, onClose }) {
 
   return (
     <div className="modal-backdrop" onPointerDown={(event) => event.target === event.currentTarget && !busy && onClose()}>
-      {code ? (
-        <ShareRoom code={code} title={title.trim()} onClose={onClose} />
-      ) : (
         <form className="modal panel" onSubmit={create} aria-labelledby="challenge-title">
           <div className="inspector-head">
             <h2 id="challenge-title">Start a challenge</h2>
@@ -117,6 +119,7 @@ export default function ChallengeDialog({ setup, takePicture, onClose }) {
                 />
               </label>
               <WishlistEditor wishlist={wishlist} onChange={setWishlist} />
+              <RulesEditor rules={rules} onChange={setRules} />
             </>
           )}
 
@@ -128,7 +131,6 @@ export default function ChallengeDialog({ setup, takePicture, onClose }) {
             </button>
           )}
         </form>
-      )}
     </div>
   )
 }
@@ -237,43 +239,131 @@ function WishlistEditor({ wishlist, onChange }) {
   )
 }
 
-// The room exists: copy or share the link.
-export function ShareRoom({ code, title, onClose }) {
+const ALLOW_OPTIONS = [
+  { id: 'all', name: 'Anything' },
+  { id: 'categories', name: 'Categories' },
+  { id: 'items', name: 'Specific items' },
+]
+
+// What challengers may use. The room, desk, and paint are always locked;
+// here you can also limit the item library and how many items they add.
+// Wishlist items are always allowed.
+function RulesEditor({ rules, onChange }) {
+  const toggle = (key, value) =>
+    onChange({
+      ...rules,
+      [key]: rules[key].includes(value) ? rules[key].filter((v) => v !== value) : [...rules[key], value],
+    })
+
+  return (
+    <div className="field rules-editor">
+      <span className="field-label">Rules for challengers</span>
+      <p className="hint">The room, desk, and wall/floor paint are always locked. Wishlist items are always allowed.</p>
+      <Segmented
+        label="Items challengers can use"
+        options={ALLOW_OPTIONS}
+        value={rules.allow}
+        onChange={(allow) => onChange({ ...rules, allow })}
+      />
+      {rules.allow === 'categories' && (
+        <div className="chip-row">
+          {CATEGORIES.map((category) => (
+            <button
+              key={category}
+              type="button"
+              aria-pressed={rules.categories.includes(category)}
+              className={`chip ${rules.categories.includes(category) ? 'is-active' : ''}`}
+              onClick={() => toggle('categories', category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
+      )}
+      {rules.allow === 'items' && (
+        <div className="rules-items">
+          {CATEGORIES.map((category) => (
+            <fieldset key={category}>
+              <legend>{category}</legend>
+              {ASSETS.filter((asset) => asset.category === category).map((asset) => (
+                <label key={asset.id} className="rules-check">
+                  <input type="checkbox" checked={rules.items.includes(asset.id)} onChange={() => toggle('items', asset.id)} />
+                  {asset.name}
+                </label>
+              ))}
+            </fieldset>
+          ))}
+        </div>
+      )}
+      <label className="rules-max">
+        <span>Max items they can add</span>
+        <input
+          className="input"
+          type="number"
+          min={1}
+          max={99}
+          value={rules.maxItems ?? ''}
+          placeholder="No limit"
+          onChange={(event) => {
+            const n = Math.round(Number(event.target.value))
+            onChange({ ...rules, maxItems: event.target.value && n >= 1 ? Math.min(n, 99) : null })
+          }}
+        />
+      </label>
+    </div>
+  )
+}
+
+// The room exists: copy or share the link. `page` = shown as a full page
+// (no close button) instead of a pop-up.
+export function ShareRoom({ code, title, onClose, page = false }) {
   const url = `${window.location.origin}/r/${code}`
   const [copied, setCopied] = useState(false)
-  const text = `Design my desk! ${title}`
+  const text = `Fix my setup! ${title}`.trim()
 
   async function copy() {
     try {
       await navigator.clipboard.writeText(url)
       playSfx('place')
       setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
     } catch {
       setCopied(false)
     }
   }
 
   return (
-    <div className="modal panel" role="dialog" aria-labelledby="share-title">
+    <div className="modal panel share-card" role="dialog" aria-labelledby="share-title">
       <div className="inspector-head">
         <h2 id="share-title">Your challenge is live!</h2>
-        <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
-          ×
-        </button>
+        {!page && (
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        )}
       </div>
-      <p className="hint">Send this to your friends. Anyone with the link can join and design for you.</p>
+      <p className="hint">
+        Send this link to your friends. They&apos;ll see <strong>&ldquo;Fix my setup&rdquo;</strong> as the preview.
+      </p>
+
       <div className="share-link">
         <input className="input" value={url} readOnly onFocus={(event) => event.target.select()} aria-label="Challenge link" />
         <button type="button" className="btn btn-accent" onClick={copy}>
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? 'Copied!' : 'Copy link'}
         </button>
       </div>
       <p className="room-code">
         Room code <strong>{code.toUpperCase()}</strong>
       </p>
+
+      <div className="qr-box" role="img" aria-label="QR code, coming soon">
+        <span className="qr-fake" aria-hidden="true" />
+        <span className="qr-soon">Coming soon</span>
+      </div>
+
       <div className="inspector-actions">
         {typeof navigator.share === 'function' && (
-          <button type="button" className="btn" onClick={() => navigator.share({ title: text, text, url }).catch(() => {})}>
+          <button type="button" className="btn" onClick={() => navigator.share({ title: 'Fix my setup', text, url }).catch(() => {})}>
             Share…
           </button>
         )}

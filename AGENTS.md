@@ -1,4 +1,4 @@
-# Desk Maxxing: notes for coding agents
+# No It HAS To Go There (Desk-Maxxing): notes for coding agents
 
 The full product spec lives with the owner. It's built in phases, and each phase is
 committed separately.

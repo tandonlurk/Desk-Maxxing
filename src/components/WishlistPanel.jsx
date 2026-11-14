@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { hasLimits } from '../assets/challengeRules.js'
 import { Author } from './SetupCard.jsx'
 import { playSfx } from '../sfx.js'
 
@@ -69,7 +70,14 @@ export default function WishlistPanel({ challenge, placed, onAdd }) {
             })}
           </ul>
         )}
-        <p className="hint">The base (what&apos;s already in the room) is locked. Add, paint, and decorate around it!</p>
+        <p className="hint">The room, desk, paint, and everything already in it are locked. Add items around it!</p>
+        {hasLimits(challenge.rules) && (
+          <p className="rules-note">
+            {challenge.rules.maxItems !== null && `Up to ${challenge.rules.maxItems} items. `}
+            {challenge.rules.allow === 'categories' && `Allowed: ${challenge.rules.categories.join(', ') || 'wishlist only'}. `}
+            {challenge.rules.allow === 'items' && 'Only the items the creator picked are in your Items tab. '}
+          </p>
+        )}
       </section>
     </div>
   )

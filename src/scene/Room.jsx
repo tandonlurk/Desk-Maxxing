@@ -4,6 +4,7 @@ import { Vector3 } from 'three'
 import { tiledTexture } from './pixelTexture.js'
 import { FLOOR_STYLES } from '../assets/roomOptions.js'
 import { cssVar } from './cssVar.js'
+import { SILL } from './wallPlacement.js'
 
 const WALL_THICKNESS = 10
 const BASE_THICKNESS = 12 // the chunky diorama block under the floor
@@ -11,6 +12,7 @@ const FLOOR_THICKNESS = 0.6
 const BASEBOARD = { height: 8, depth: 1.5 }
 const TILE = 40 // cm per texture repeat
 const FADED = 0.14
+const FRAME = { size: 6, depth: 5, color: '#a8703f' } // wood window frames
 
 // The room around the desk: a floor on a chunky diorama base, plus the back
 // and side walls (the front is open so you can see in). Drawn in room
@@ -46,6 +48,9 @@ export default function Room({ room, onPaint }) {
   const backRight = room.walls.right ? WALL_THICKNESS : 0
   const backLength = W + backLeft + backRight
   const backCenter = (backRight - backLeft) / 2
+  // A wall's windows with `x` along the wall in its own (local) coordinates.
+  const windowsOn = (wall, toLocal) =>
+    (room.windows || []).filter((w) => w.wall === wall).map((w) => ({ ...w, x: toLocal(w.u) }))
 
   return (
     <group>
@@ -76,6 +81,7 @@ export default function Room({ room, onPaint }) {
           rotation={0}
           isOutside={(camera) => camera.z < -D / 2}
           handlers={paintHandlers('back')}
+          windows={windowsOn('back', (u) => u - backCenter)}
         />
       )}
       {room.walls.left && (
@@ -89,6 +95,7 @@ export default function Room({ room, onPaint }) {
           rotation={Math.PI / 2}
           isOutside={(camera) => camera.x < -W / 2}
           handlers={paintHandlers('left')}
+          windows={windowsOn('left', (u) => -u)}
         />
       )}
       {room.walls.right && (
@@ -102,6 +109,7 @@ export default function Room({ room, onPaint }) {
           rotation={-Math.PI / 2}
           isOutside={(camera) => camera.x > W / 2}
           handlers={paintHandlers('right')}
+          windows={windowsOn('right', (u) => u)}
         />
       )}
     </group>
@@ -110,9 +118,9 @@ export default function Room({ room, onPaint }) {
 
 // One wall: a thick slab with a plaster texture and a baseboard along the
 // bottom. Its inside face points along its local +z.
-function Wall({ color, length, inner, height, position, rotation, isOutside, handlers }) {
+function Wall({ color, length, inner, height, position, rotation, isOutside, handlers, windows = [] }) {
   const groupRef = useRef()
-  const materials = useRef([])
+  const materials = useRef({})
   const map = useMemo(() => tiledTexture('plaster', length / TILE, height / TILE, 11), [length, height])
   const camera = useMemo(() => new Vector3(), [])
 
@@ -123,7 +131,7 @@ function Wall({ color, length, inner, height, position, rotation, isOutside, han
     camera.copy(state.camera.position)
     parent.worldToLocal(camera) // into room coordinates
     const target = isOutside(camera) && camera.y < height * 2.2 ? FADED : 1
-    for (const material of materials.current) {
+    for (const material of Object.values(materials.current)) {
       if (!material) continue
       material.opacity += (target - material.opacity) * Math.min(1, delta * 10)
       const faded = material.opacity < 0.99
@@ -135,8 +143,9 @@ function Wall({ color, length, inner, height, position, rotation, isOutside, han
     }
   })
 
-  const setMaterial = (index) => (material) => {
-    materials.current[index] = material
+  const setMaterial = (key) => (material) => {
+    if (material) materials.current[key] = material
+    else delete materials.current[key]
   }
 
   return (
@@ -154,6 +163,55 @@ function Wall({ color, length, inner, height, position, rotation, isOutside, han
       <mesh position={[0, height / 2 + 0.5, 0]}>
         <boxGeometry args={[length, 1, WALL_THICKNESS]} />
         <meshStandardMaterial ref={setMaterial(2)} color={cssVar('--ink')} flatShading />
+      </mesh>
+      {windows.map((w) => (
+        <group key={w.id} position={[w.x, -height / 2 + w.y, WALL_THICKNESS / 2]}>
+          <WindowModel win={w} setMaterial={(part) => setMaterial(`${w.id}-${part}`)} />
+        </group>
+      ))}
+    </group>
+  )
+}
+
+// A four-pane window on a wall's inside face: wood frame and cross bars,
+// tinted glass, and a sill under it. Drawn from its bottom center, with +z
+// pointing into the room.
+function WindowModel({ win, setMaterial }) {
+  const { width: w, height: h } = win
+  const f = FRAME.size
+  const bar = f * 0.7
+  const z = FRAME.depth / 2
+  const bars = [
+    { key: 'top', pos: [0, h - f / 2, z], size: [w, f, FRAME.depth] },
+    { key: 'bottom', pos: [0, f / 2, z], size: [w, f, FRAME.depth] },
+    { key: 'left', pos: [-w / 2 + f / 2, h / 2, z], size: [f, h - 2 * f, FRAME.depth] },
+    { key: 'right', pos: [w / 2 - f / 2, h / 2, z], size: [f, h - 2 * f, FRAME.depth] },
+    { key: 'mullion', pos: [0, h / 2, z * 0.8], size: [bar, h - 2 * f, FRAME.depth * 0.8] },
+    { key: 'transom', pos: [0, h / 2, z * 0.8], size: [w - 2 * f, bar, FRAME.depth * 0.8] },
+  ]
+  return (
+    <group>
+      <mesh position={[0, h / 2, 0.6]}>
+        <boxGeometry args={[w - 2 * f, h - 2 * f, 1]} />
+        <meshStandardMaterial
+          ref={setMaterial('glass')}
+          color={win.glass}
+          emissive={win.glass}
+          emissiveIntensity={0.35}
+          roughness={0.15}
+          metalness={0.1}
+          flatShading
+        />
+      </mesh>
+      {bars.map((b) => (
+        <mesh key={b.key} position={b.pos} castShadow receiveShadow>
+          <boxGeometry args={b.size} />
+          <meshStandardMaterial ref={setMaterial(b.key)} color={FRAME.color} roughness={0.8} flatShading />
+        </mesh>
+      ))}
+      <mesh position={[0, -SILL.height / 2, SILL.depth / 2]} castShadow receiveShadow>
+        <boxGeometry args={[w + 2 * SILL.overhang, SILL.height, SILL.depth]} />
+        <meshStandardMaterial ref={setMaterial('sill')} color="#fffdf6" flatShading />
       </mesh>
     </group>
   )
